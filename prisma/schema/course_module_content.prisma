@@ -1,0 +1,10 @@
+model course_module_content{
+    id           String   @id @default(cuid())
+    name         String
+    description  String?
+    mediaUrl     String
+    moduleId     String
+    module       course_module   @relation("ModuleContent", fields: [moduleId], references: [id])
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+}

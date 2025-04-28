@@ -1,0 +1,17 @@
+model Course{
+    id           String   @id @default(cuid())
+    name         String
+    description  String
+    category     String?
+    isApproved   Boolean @default(false)
+    isDeleted    Boolean  @default(false)
+    createdById  Int
+    approvedById Int?
+    createdBy    User @relation("CreatedCourses", fields: [createdById], references: [id])  
+    approvedBy   User? @relation("ApprovedCourses", fields: [approvedById], references: [id])
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    // Relationships
+    courseModules course_module[] @relation("CourseModules")
+}

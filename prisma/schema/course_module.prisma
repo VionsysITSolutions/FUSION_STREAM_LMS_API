@@ -1,0 +1,12 @@
+model course_module{
+    id           String   @id @default(cuid())
+    title        String
+    summary      String?
+    courseId     String
+    course       Course   @relation("CourseModules",fields: [courseId], references: [id])
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    // Relationships
+    moduleContent course_module_content[] @relation("ModuleContent")
+}

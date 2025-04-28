@@ -1,0 +1,35 @@
+enum Gender {
+  M
+  F
+  O
+}
+ 
+enum Role {
+  student
+  instructor
+  admin
+  superAdmin
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  firstName     String
+  middleName    String?
+  lastName      String
+  bio           String?
+  email         String   @unique
+  university    String?
+  stream        String?
+  mobileNumber  String   @unique
+  gender        Gender
+  isDeleted     Boolean  @default(false)
+  address       String?
+  role          Role     @default(student) 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  createdCourses  Course[] @relation("CreatedCourses")
+  approvedCourses Course[] @relation("ApprovedCourses")
+}
+ 
