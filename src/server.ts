@@ -5,7 +5,7 @@ const server = app.listen(config.PORT);
 
 (() => {
     try {
-        console.log(`Server is running on port ${config.PORT}`);
+        console.log(`Server is running on port:: ${config.PORT}`);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
         server.close((error) => {
