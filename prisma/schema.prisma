@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/prisma"
 }
 
 datasource db {
@@ -13,7 +12,7 @@ enum Gender {
   F
   O
 }
- 
+
 enum Role {
   student
   instructor
@@ -22,115 +21,117 @@ enum Role {
 }
 
 enum batchTimeSlot {
-    morning
-    afternoon
-    evening
+  morning
+  afternoon
+  evening
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  firstName     String
-  middleName    String?
-  lastName      String
-  bio           String?
-  email         String   @unique
-  university    String?
-  stream        String?
-  mobileNumber  String   @unique
-  gender        Gender
-  isDeleted     Boolean  @default(false)
-  address       String?
-  role          Role     @default(student) 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  firstName    String
+  middleName   String?
+  lastName     String
+  bio          String?
+  email        String   @unique
+  university   String?
+  stream       String?
+  mobileNumber String   @unique
+  gender       Gender
+  isDeleted    Boolean  @default(false)
+  address      String?
+  role         Role     @default(student)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relationships
-  createdCourses  Course[] @relation("CreatedCourses")
-  approvedCourses Course[] @relation("ApprovedCourses")
-  batchInstructor  batch_module[] @relation("BatchModuleInstrucotr")
-}
- 
-model Course{
-    id           String   @id @default(cuid())
-    name         String
-    description  String
-    category     String?
-    isApproved   Boolean @default(false)
-    isDeleted    Boolean  @default(false)
-    createdById  Int
-    approvedById Int?
-    createdBy    User @relation("CreatedCourses", fields: [createdById], references: [id])  
-    approvedBy   User? @relation("ApprovedCourses", fields: [approvedById], references: [id])
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
-
-    // Relationships
-    courseModules course_module[] @relation("CourseModules")
-    batches       batch[] @relation("Batches")
-}
-model course_module{
-    id           String   @id @default(cuid())
-    title        String
-    summary      String?
-    courseId     String
-    course       Course   @relation("CourseModules",fields: [courseId], references: [id])
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
-
-    // Relationships
-    moduleContent course_module_content[] @relation("ModuleContent")
-}
-model course_module_content{
-    id           String   @id @default(cuid())
-    name         String
-    description  String?
-    mediaUrl     String
-    moduleId     String
-    module       course_module   @relation("ModuleContent", fields: [moduleId], references: [id])
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+  createdCourses  Course[]       @relation("CreatedCourses")
+  approvedCourses Course[]       @relation("ApprovedCourses")
+  batchInstructor batch_module[] @relation("BatchModuleInstrucotr")
 }
 
-model batch{
-    id           String   @id @default(cuid())
-    name         String
-    description  String
-    startDate    DateTime
-    duration     Int
-    batchTimeSlot batchTimeSlot
-    courseId     String
-    course       Course @relation("Batches",fields: [courseId], references: [id])
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+model Course {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  category     String?
+  isApproved   Boolean  @default(false)
+  isDeleted    Boolean  @default(false)
+  createdById  Int
+  approvedById Int?
+  createdBy    User     @relation("CreatedCourses", fields: [createdById], references: [id])
+  approvedBy   User?    @relation("ApprovedCourses", fields: [approvedById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
+  // Relationships
+  courseModules course_module[] @relation("CourseModules")
+  batches       batch[]         @relation("Batches")
+}
 
-    // Relationships
-    batchModules batch_module[] @relation("BatchModules")
+model course_module {
+  id        String   @id @default(cuid())
+  title     String
+  summary   String?
+  courseId  String
+  course    Course   @relation("CourseModules", fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  moduleContent course_module_content[] @relation("ModuleContent")
+}
+
+model course_module_content {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  mediaUrl    String
+  moduleId    String
+  module      course_module @relation("ModuleContent", fields: [moduleId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model batch {
+  id            String        @id @default(cuid())
+  name          String
+  description   String
+  startDate     DateTime
+  duration      Int
+  batchTimeSlot batchTimeSlot
+  courseId      String
+  course        Course        @relation("Batches", fields: [courseId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relationships
+  batchModules batch_module[] @relation("BatchModules")
 }
 
 model batch_module {
-    id           String   @id @default(cuid())
-    title        String
-    description  String
-    instructorId Int
-    instructor   User @relation("BatchModuleInstrucotr",fields: [instructorId], references: [id])
-    batchId      String
-    batch        batch @relation("BatchModules", fields: [batchId], references: [id])
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  instructorId Int
+  instructor   User     @relation("BatchModuleInstrucotr", fields: [instructorId], references: [id])
+  batchId      String
+  batch        batch    @relation("BatchModules", fields: [batchId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-    // Relationships
-    batchModuleSessions batch_module_session[] @relation("BatchModuleSessions")
+  // Relationships
+  batchModuleSessions batch_module_session[] @relation("BatchModuleSessions")
 }
+
 model batch_module_session {
-    id           String   @id @default(cuid())
-    topicName    String
-    summary      String
-    sessionDate  DateTime
-    meetLink     String
-    recordingURL String?
-    batchModuleId String
-    batchModule  batch_module @relation("BatchModuleSessions",fields: [batchModuleId], references: [id])
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+  id            String       @id @default(cuid())
+  topicName     String
+  summary       String
+  sessionDate   DateTime
+  meetLink      String
+  recordingURL  String?
+  batchModuleId String
+  batchModule   batch_module @relation("BatchModuleSessions", fields: [batchModuleId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
