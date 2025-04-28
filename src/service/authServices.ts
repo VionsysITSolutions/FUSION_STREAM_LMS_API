@@ -9,7 +9,8 @@ export default {
     createOtp: async (email: string) => {
         const otp = generateOtp();
         const key = `otp:${email}`;
-        return await redis.set(key, otp, 'EX', application.OTP_EXPIRY);
+        await redis.set(key, otp, 'EX', application.OTP_EXPIRY);
+        return key;
     },
 
     verifyOtp: async (email: string) => {
