@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const signUpSchema = z.object({
-    firstName: z.string().min(2, { message: 'Name must be at least 2 characters' }),
+    firstName: z.string({ message: 'firstName is required' }).min(2, { message: 'Name must be at least 2 characters' }),
     lastName: z.string().min(2, { message: 'Surname must be at least 2 characters' }),
     email: z.string().email({ message: 'Please enter a valid email address' }),
     mobileNumber: z
@@ -20,3 +20,7 @@ export const signInSchema = z.object({
 export const otpSchema = z.object({
     otp: z.string().min(6, { message: 'OTP must be 6 digits' }).max(6, { message: 'OTP must be 6 digits' })
 });
+
+export type SignUpBody = z.infer<typeof signUpSchema>;
+export type SignInBody = z.infer<typeof signInSchema>;
+export type OtpBody = z.infer<typeof otpSchema>;
