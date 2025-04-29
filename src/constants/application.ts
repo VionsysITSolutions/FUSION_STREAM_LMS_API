@@ -1,3 +1,4 @@
 export default {
-    OTP_EXPIRY: 50
+    APP_NAME: 'LMS System',
+    OTP_EXPIRY: 300 // 5 minutes
 };

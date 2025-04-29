@@ -1,16 +1,12 @@
 import application from '../constants/application';
 import redis from '../lib/redis';
-
-function generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
+import quicker from '../util/quicker';
 export default {
     createOtp: async (email: string) => {
-        const otp = generateOtp();
+        const otp = quicker.generateOTP();
         const key = `otp:${email}`;
         await redis.set(key, otp, 'EX', application.OTP_EXPIRY);
-        return key;
+        return otp;
     },
 
     verifyOtp: async (email: string) => {
