@@ -26,6 +26,11 @@ enum batchTimeSlot {
   evening
 }
 
+enum paymentStatus {
+  pending
+  completed
+  failed
+}
 model User {
   id           Int      @id @default(autoincrement())
   firstName    String
@@ -46,7 +51,12 @@ model User {
   // Relationships
   createdCourses  Course[]       @relation("CreatedCourses")
   approvedCourses Course[]       @relation("ApprovedCourses")
-  batchInstructor batch_module[] @relation("BatchModuleInstrucotr")
+  batchInstructor batch_module[] @relation("BatchModuleInstructor")
+  studentCourseEnrollments courseEnrollment[] @relation("StudentEnrollments")
+  studentBatchEnrollments batchEnrollment[] @relation("StudentBatchEnrollments")
+  senderMessages chat_message[] @relation("Sender")
+  userTransactions transaction[] @relation("UserTransaction")
+  createdCoupons coupon[]       @relation("CreatedCoupons")
 }
 
 model Course {
@@ -66,6 +76,18 @@ model Course {
   // Relationships
   courseModules course_module[] @relation("CourseModules")
   batches       batch[]         @relation("Batches")
+  enrollments   courseEnrollment[] @relation("CourseEnrollments")
+  transactions  transaction[]  @relation("CourseTransaction")
+}
+
+model courseEnrollment{
+  @@map("course_enrollments")
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id])
+  studentId Int
+  student   User     @relation("StudentEnrollments", fields: [studentId], references: [id])
+  enrolledAt DateTime @default(now())
 }
 
 model course_module {
@@ -106,6 +128,9 @@ model batch {
 
   // Relationships
   batchModules batch_module[] @relation("BatchModules")
+  batchEnrollments batchEnrollment[] @relation("BatchEnrollments")
+  chatMessages chat_message[] @relation("Batch")
+  batchTransactions transaction[] @relation("BatchTransaction")
 }
 
 model batch_module {
@@ -113,7 +138,7 @@ model batch_module {
   title        String
   description  String
   instructorId Int
-  instructor   User     @relation("BatchModuleInstrucotr", fields: [instructorId], references: [id])
+  instructor   User     @relation("BatchModuleInstructor", fields: [instructorId], references: [id])
   batchId      String
   batch        batch    @relation("BatchModules", fields: [batchId], references: [id])
   createdAt    DateTime @default(now())
@@ -134,4 +159,68 @@ model batch_module_session {
   batchModule   batch_module @relation("BatchModuleSessions", fields: [batchModuleId], references: [id])
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  // Relationships
+  chatMessages chat_message[] @relation("BatchSession")
+}
+
+model batchEnrollment{
+  @@map("batch_enrollments")
+  id        String   @id @default(cuid())
+  batchId   String
+  batch     batch    @relation("BatchEnrollments", fields: [batchId], references: [id])
+  studentId Int
+  student   User     @relation("StudentBatchEnrollments", fields: [studentId], references: [id])
+  enrolledAt DateTime @default(now())
+}
+
+model chat_message{
+  id        String   @id @default(cuid())
+  senderId   Int
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  batchId   String
+  batch     batch    @relation("Batch", fields: [batchId], references: [id])
+  messageTxt String
+  replyToMessageId String?
+  replyToMessage chat_message? @relation("ReplyToMessage", fields: [replyToMessageId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  batchSessionId String?
+  batchSession batch_module_session? @relation("BatchSession", fields: [batchSessionId], references: [id])
+
+  // Relationships
+  replies chat_message[] @relation("ReplyToMessage")
+}
+
+model transaction{
+  id        String   @id @default(cuid())
+  orderId   String
+  paymentId String?
+  paymentStatus paymentStatus @default(pending)
+  amount    Decimal
+  courseId  String
+  course    Course   @relation("CourseTransaction", fields: [courseId], references: [id])
+  userId    Int
+  user      User     @relation("UserTransaction", fields: [userId], references: [id])
+  batchId   String?
+  batch     batch?    @relation("BatchTransaction", fields: [batchId], references: [id])
+  couponId String?
+  coupon    coupon?   @relation("CouponTransaction", fields: [couponId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model coupon{
+  id        String   @id @default(cuid())
+  code      String   @unique
+  expiryDate DateTime
+  limit    Int
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById Int
+  createdBy   User     @relation("CreatedCoupons", fields: [createdById], references: [id])
+
+  // Relationships
+  transactions transaction[] @relation("CouponTransaction")
 }
