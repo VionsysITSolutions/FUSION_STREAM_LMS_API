@@ -10,5 +10,6 @@ export default {
     SMTP_SERVICE: process.env.SMTP_SERVICE,
     SMTP_MAIL: process.env.SMTP_MAIL,
     SMTP_PASSWORD: process.env.SMTP_PASSWORD,
-    JWT_SECRET: process.env.JWT_SECRET
+    JWT_SECRET: process.env.JWT_SECRET,
+    FRONTEND_URL: process.env.FRONTEND_URL
 };

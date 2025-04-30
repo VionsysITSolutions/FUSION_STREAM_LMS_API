@@ -4,10 +4,26 @@ import responseMessage from './constants/responseMessage';
 import httpError from './util/httpError';
 import apiRouter from './router/apiRouter';
 import authRouter from './router/authRouter';
-
+import config from './config/config';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 const app: Application = express();
+// middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+app.use(helmet());
+
+app.use(cookieParser());
+app.use(
+    cors({
+        methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'PUT'],
+        origin: config.FRONTEND_URL,
+        credentials: true
+    })
+);
+
 app.use('/api/v1/', apiRouter);
 app.use('/api/v1/auth', authRouter);
 
