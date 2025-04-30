@@ -9,9 +9,10 @@ export default {
         return otp;
     },
 
-    verifyOtp: async (email: string) => {
+    verifyOtp: async (email: string, otp: string) => {
         const key = `otp:${email}`;
         const storedOtp = await redis.get(key);
-        return storedOtp;
+        const result = storedOtp && storedOtp === otp;
+        return result;
     }
 };

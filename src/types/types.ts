@@ -20,3 +20,10 @@ export type IHttpError = {
     data: unknown;
     trace?: object | null;
 };
+
+export type JwtPayload = {
+    id: number;
+    role: string;
+    iat: number;
+    exp: number;
+};

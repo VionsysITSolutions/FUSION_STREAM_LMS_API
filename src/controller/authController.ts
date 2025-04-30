@@ -10,14 +10,44 @@ import authServices from '../service/authServices';
 import emailService from '../service/emailService';
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
+
 export default {
     signUpStart: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const result = signUpSchema.safeParse(req.body);
+        const result = signInSchema.safeParse(req.body);
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }
+        const alreadyExist = await userServices.findbyEmail(result.data.email);
+
+        if (alreadyExist && !alreadyExist.isDeleted) {
+            return httpError(next, new Error(responseMessage.USER_ALREADY_EXIST), req, 409);
+        }
+
+        const otp = await authServices.createOtp(result.data.email);
+        await emailService.sendOTP({ email: result.data.email, otp });
+
+        return httpResponse(req, res, 201, responseMessage.SUCCESS, {});
+    }),
+
+    register: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = signUpSchema.safeParse(req.body);
+        const otp = otpSchema.safeParse(req.query as { otp: string });
+
+        if (!result.success) {
+            console.log('error result');
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+
+        if (!otp.success) {
+            console.log('error otp');
+            return httpError(next, new Error(quicker.zodError(otp)), req, 400);
+        }
 
         const alreadyExist = await userServices.findbyEmail(result.data.email);
+        const storedOtp = await authServices.verifyOtp(result.data.email, otp.data.otp);
+        if (!storedOtp) {
+            return httpError(next, new Error(responseMessage.INVALID_EXPIRED_OTP), req, 400);
+        }
         let user;
         if (alreadyExist) {
             if (!alreadyExist.isDeleted) {
@@ -30,10 +60,10 @@ export default {
             });
         }
 
-        const otp = await authServices.createOtp(result.data.email);
-        await emailService.sendOTP({ email: result.data.email, otp });
-
-        return httpResponse(req, res, 201, responseMessage.SUCCESS, { user });
+        const token = jwt.sign({ userId: user?.id, role: user?.role }, config.JWT_SECRET as string, {
+            expiresIn: '24h'
+        });
+        return httpResponse(req, res, 201, responseMessage.SUCCESS, { token });
     }),
 
     signIn: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -55,26 +85,31 @@ export default {
 
     verifyOtp: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { email } = req.body as { email: string };
-        const result = otpSchema.safeParse(req.body);
+        const result = signInSchema.safeParse({ email });
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const otp = otpSchema.safeParse(req.query as { otp: string });
+        if (!otp.success) {
+            return httpError(next, new Error(quicker.zodError(otp)), req, 400);
         }
         const user = await userServices.findbyEmail(email);
         if (!user) {
             return httpError(next, new Error('User not found'), req, 404);
         }
 
-        const storedOtp = await authServices.verifyOtp(email);
-        if (!storedOtp || storedOtp !== result.data.otp) {
-            return httpError(next, new Error('Invalid OTP'), req, 400);
+        const storedOtp = await authServices.verifyOtp(email, otp.data.otp);
+        if (!storedOtp) {
+            return httpError(next, new Error(responseMessage.INVALID_EXPIRED_OTP), req, 400);
         }
 
-        const token = jwt.sign({ userId: user.id }, config.JWT_SECRET as string, {
+        const token = jwt.sign({ userId: user.id, role: user.role }, config.JWT_SECRET as string, {
             expiresIn: '24h'
         });
 
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { token, user });
     }),
+
     markAsDeleted: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const result = deleteByIdSchema.safeParse({ id: Number(req.params.id) });
         if (!result.success) {

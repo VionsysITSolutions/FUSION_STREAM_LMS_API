@@ -40,7 +40,7 @@ model User {
   email        String   @unique
   university   String?
   stream       String?
-  mobileNumber String   @unique
+  mobileNumber String   
   gender       Gender
   isDeleted    Boolean  @default(false)
   address      String?
