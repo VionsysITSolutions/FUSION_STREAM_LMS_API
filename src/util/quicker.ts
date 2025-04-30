@@ -1,6 +1,6 @@
 import { SafeParseReturnType } from 'zod';
 import nodemailer from 'nodemailer';
-import config from '../config/config';
+import config from '../config';
 export default {
     zodError: (result: SafeParseReturnType<unknown, unknown>) => {
         const error = result?.error?.issues[0]?.message ?? 'Validation error';

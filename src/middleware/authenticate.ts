@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import config from '../config/config';
-import userServices from '../service/userServices';
+import config from '../config';
+import userServices from '../service/user.service';
 import httpError from '../util/httpError';
 import catchAsync from '../util/catchAsync';
 import { JwtPayload } from '../types/types';
