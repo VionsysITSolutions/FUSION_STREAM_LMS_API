@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import authController from '../controller/auth.controller';
+
+const authRouter = Router();
+authRouter.route('/sign-up').post(authController.signUpStart);
+authRouter.route('/register').post(authController.register);
+authRouter.route('/sign-in').post(authController.signIn);
+authRouter.route('/verify-otp').post(authController.verifyOtp);
+authRouter.route('/delete/:id').delete(authController.markAsDeleted);
+export default authRouter;
