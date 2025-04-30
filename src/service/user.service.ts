@@ -1,5 +1,5 @@
 import prisma from '../lib/db';
-import { SignUpBody } from '../zod/authSchema';
+import { SignUpBody } from '../zod/auth.schema';
 
 export default {
     findbyEmail: async (email: string) => {

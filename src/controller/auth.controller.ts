@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import httpResponse from '../util/httpResponse';
 import catchAsync from '../util/catchAsync';
-import { signUpSchema, signInSchema, otpSchema, deleteByIdSchema } from '../zod/authSchema';
+import { signUpSchema, signInSchema, otpSchema, deleteByIdSchema } from '../zod/auth.schema';
 import httpError from '../util/httpError';
-import userServices from '../service/userServices';
+import userServices from '../service/user.service';
 import quicker from '../util/quicker';
 import responseMessage from '../constants/responseMessage';
-import authServices from '../service/authServices';
-import emailService from '../service/emailService';
+import authServices from '../service/auth.service';
+import emailService from '../service/email.service';
 import * as jwt from 'jsonwebtoken';
-import config from '../config/config';
+import config from '../config';
 
 export default {
     signUpStart: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
