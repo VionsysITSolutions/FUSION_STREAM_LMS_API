@@ -7,4 +7,5 @@ authRouter.route('/register').post(authController.register);
 authRouter.route('/sign-in').post(authController.signIn);
 authRouter.route('/verify-otp').post(authController.verifyOtp);
 authRouter.route('/delete/:id').delete(authController.markAsDeleted);
+
 export default authRouter;

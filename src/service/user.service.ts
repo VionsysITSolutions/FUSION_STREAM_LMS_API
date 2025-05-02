@@ -1,5 +1,5 @@
 import prisma from '../lib/db';
-import { SignUpBody } from '../zod/auth.schema';
+import { SignUpBody, UpdateBody } from '../zod/auth.schema';
 
 export default {
     findbyEmail: async (email: string) => {
@@ -25,6 +25,12 @@ export default {
         return await prisma.user.update({
             where: { id },
             data: { isDeleted: true }
+        });
+    },
+    updateUser: async ({ id, data }: { id: number; data: UpdateBody }) => {
+        return await prisma.user.update({
+            where: { id },
+            data
         });
     }
 };

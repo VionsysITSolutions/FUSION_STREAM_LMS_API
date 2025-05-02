@@ -34,12 +34,10 @@ export default {
         const otp = otpSchema.safeParse(req.query as { otp: string });
 
         if (!result.success) {
-            console.log('error result');
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }
 
         if (!otp.success) {
-            console.log('error otp');
             return httpError(next, new Error(quicker.zodError(otp)), req, 400);
         }
 
@@ -86,10 +84,12 @@ export default {
     verifyOtp: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { email } = req.body as { email: string };
         const result = signInSchema.safeParse({ email });
+        const otp = otpSchema.safeParse(req.query as { otp: string });
+
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }
-        const otp = otpSchema.safeParse(req.query as { otp: string });
+
         if (!otp.success) {
             return httpError(next, new Error(quicker.zodError(otp)), req, 400);
         }
