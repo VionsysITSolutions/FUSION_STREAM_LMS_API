@@ -63,6 +63,8 @@ model Course {
   id           String   @id @default(cuid())
   name         String
   description  String
+  thumbnailUrl String
+  price        Decimal
   category     String?
   isApproved   Boolean  @default(false)
   isDeleted    Boolean  @default(false)

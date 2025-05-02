@@ -8,6 +8,14 @@ import config from './config';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import batchRouter from './router/batch.route';
+import courseRouter from './router/course.route';
+import courseModuleRouter from './router/course-module.route';
+import moduleContentRouter from './router/module-content.route';
+import batchModuleRouter from './router/batch-module.route';
+import batchSessionRouter from './router/batch-session.route';
+import chatRouter from './router/chat.route';
+// import userRouter from './router/user.route';
 const app: Application = express();
 // middlewares
 app.use(express.json());
@@ -26,6 +34,14 @@ app.use(
 
 app.use('/api/v1/', apiRouter);
 app.use('/api/v1/auth', authRouter);
+// app.use('/api/v1/user', userRouter);
+app.use('/api/v1/course', courseRouter);
+app.use('/api/v1/course-module', courseModuleRouter);
+app.use('/api/v1/course-module-content', moduleContentRouter);
+app.use('/api/v1/batch', batchRouter);
+app.use('/api/v1/batch-module', batchModuleRouter);
+app.use('/api/v1/batch-module-session', batchSessionRouter);
+app.use('/api/v1/batch-session/chats', chatRouter);
 
 // 404 Handler
 app.use((req: Request, _: Response, next: NextFunction) => {
