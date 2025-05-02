@@ -5,7 +5,13 @@ import userServices from '../service/user.service';
 import httpError from '../util/httpError';
 import catchAsync from '../util/catchAsync';
 import { JwtPayload } from '../types/types';
+import { User } from '../../prisma/generated/prisma';
 
+declare module 'express-serve-static-core' {
+    interface Request {
+        user?: Pick<User, 'id' | 'email' | 'role'>;
+    }
+}
 const authenticateUser = (...allowedRoles: string[]) =>
     catchAsync(async (req: Request, _: Response, next: NextFunction) => {
         const authHeader = req.headers.authorization;
@@ -21,7 +27,7 @@ const authenticateUser = (...allowedRoles: string[]) =>
 
         const decoded = jwt.verify(token, config.JWT_SECRET as string) as JwtPayload;
 
-        const user = await userServices.findById(decoded.id);
+        const user = await userServices.findById(decoded.userId);
         if (!user || user.isDeleted) {
             return httpError(next, new Error('User not found or deleted'), req, 401);
         }
@@ -31,6 +37,11 @@ const authenticateUser = (...allowedRoles: string[]) =>
             return httpError(next, new Error('Access denied'), req, 403);
         }
 
+        req.user = {
+            id: user.id,
+            email: user.email,
+            role: user.role
+        };
         next();
     });
 
