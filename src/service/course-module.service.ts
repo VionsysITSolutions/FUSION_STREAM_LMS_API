@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db';
 import { UpdateCourseModuleBody } from '../types/types';
-
-const prisma = new PrismaClient();
 
 export default {
     createCourseModule: async (moduleData: { title: string; summary?: string; courseId: string }) => {

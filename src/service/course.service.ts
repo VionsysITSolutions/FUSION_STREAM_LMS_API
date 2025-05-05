@@ -1,10 +1,15 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db';
 import { UpdateCourseBody } from '../types/types';
 
-const prisma = new PrismaClient();
-
 export default {
-    createCourse: async (courseData: { name: string; description: string; category?: string; createdById: number }) => {
+    createCourse: async (courseData: {
+        name: string;
+        description: string;
+        category?: string;
+        createdById: number;
+        thumnailUrl: string;
+        price: number;
+    }) => {
         console.log(courseData.createdById);
         return prisma.course.create({
             data: courseData,

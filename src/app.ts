@@ -15,7 +15,7 @@ import moduleContentRouter from './router/module-content.route';
 import batchModuleRouter from './router/batch-module.route';
 import batchSessionRouter from './router/batch-session.route';
 import chatRouter from './router/chat.route';
-// import userRouter from './router/user.route';
+import userRouter from './router/user.route';
 const app: Application = express();
 // middlewares
 app.use(express.json());
@@ -34,7 +34,7 @@ app.use(
 
 app.use('/api/v1/', apiRouter);
 app.use('/api/v1/auth', authRouter);
-// app.use('/api/v1/user', userRouter);
+app.use('/api/v1/user', userRouter);
 app.use('/api/v1/course', courseRouter);
 app.use('/api/v1/course-module', courseModuleRouter);
 app.use('/api/v1/course-module-content', moduleContentRouter);

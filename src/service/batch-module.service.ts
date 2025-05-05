@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db';
 import { UpdateBatchModuleBody } from '../types/types';
-
-const prisma = new PrismaClient();
 
 export default {
     createBatchModule: async (moduleData: { title: string; description: string; instructorId: number; batchId: string }) => {
