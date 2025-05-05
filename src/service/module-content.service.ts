@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db';
 import { UpdateModuleContentBody } from '../types/types';
-
-const prisma = new PrismaClient();
 
 export default {
     createModuleContent: async (contentData: { name: string; description?: string; mediaUrl: string; moduleId: string }) => {

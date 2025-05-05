@@ -60,10 +60,12 @@ export type UpdateBatchSessionBody = {
 export type UpdateCourseBody = {
     name: string;
     description: string;
-    category?: string;
+    category: string;
     isApproved?: boolean;
     approvedById?: number;
     isDeleted?: boolean;
+    thumnailUrl?: string;
+    price?: number;
 };
 
 export type UpdateCourseModuleBody = {

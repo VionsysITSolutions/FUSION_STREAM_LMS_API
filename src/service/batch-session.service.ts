@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/db';
 import { UpdateBatchSessionBody } from '../types/types';
-
-const prisma = new PrismaClient();
 
 export default {
     createBatchSession: async (sessionData: {

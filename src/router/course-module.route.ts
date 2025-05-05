@@ -15,7 +15,7 @@ courseModuleRouter
 courseModuleRouter
     .route('/:id')
     .get(courseModuleController.getCourseModuleById)
-    .put(courseModuleController.updateCourseModule)
-    .delete(courseModuleController.deleteCourseModule);
+    .put(authenticateUser('instructor', 'admin'), courseModuleController.updateCourseModule)
+    .delete(authenticateUser('instructor', 'admin'), courseModuleController.deleteCourseModule);
 
 export default courseModuleRouter;
