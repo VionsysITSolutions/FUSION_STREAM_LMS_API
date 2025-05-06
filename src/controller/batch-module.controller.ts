@@ -9,7 +9,12 @@ import batchModuleService from '../service/batch-module.service';
 
 export default {
     createBatchModule: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const result = createBatchModuleSchema.safeParse(req.body);
+        const instructorId = req.user?.id;
+        if (!instructorId) {
+            return httpError(next, new Error('Instructor ID is required'), req, 400);
+        }
+
+        const result = createBatchModuleSchema.safeParse({ ...req.body, instructorId });
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }

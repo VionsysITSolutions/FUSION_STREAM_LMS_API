@@ -7,7 +7,7 @@ export default {
         description: string;
         category?: string;
         createdById: number;
-        thumnailUrl: string;
+        thumbnailUrl: string;
         price: number;
     }) => {
         console.log(courseData.createdById);

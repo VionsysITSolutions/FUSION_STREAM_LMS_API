@@ -80,3 +80,61 @@ export type UpdateModuleContentBody = {
     mediaUrl: string;
     moduleId: string;
 };
+// Add these types to your existing types.ts file
+
+// Assessment Types
+export interface CreateAssessmentBody {
+    title: string;
+    totalMarks: number;
+    batchModuleId?: string;
+    batchId?: string;
+    courseId?: string;
+    assessmentType: 'module' | 'final';
+}
+
+export interface QuestionBody {
+    questionText: string;
+    marks: number;
+    assessmentType: 'module' | 'final';
+    moduleAssessmentId?: string;
+    finalAssessmentId?: string;
+    options: {
+        optionText: string;
+        isCorrect: boolean;
+    }[];
+}
+
+// Submission Types
+export interface CreateSubmissionBody {
+    studentId: number;
+    assessmentType: 'module' | 'final';
+    moduleAssessmentId?: string;
+    finalAssessmentId?: string;
+    answers: {
+        questionId: string;
+        selectedOptionId: string;
+    }[];
+}
+
+// Progress Tracking Types
+export interface ModuleProgressBody {
+    studentId: number;
+    moduleId: string;
+    isCompleted: boolean;
+    completedAt?: Date;
+}
+
+export interface SessionAttendanceBody {
+    studentId: number;
+    sessionId: string;
+    attendanceType: 'live' | 'recorded';
+    isAttended: boolean;
+    attendedAt?: Date;
+}
+
+export interface CourseProgressBody {
+    batchId: string;
+    studentId: number;
+    progrssPercent: number;
+    isCompleted: boolean;
+}

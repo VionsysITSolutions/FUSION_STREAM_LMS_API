@@ -16,6 +16,9 @@ import batchModuleRouter from './router/batch-module.route';
 import batchSessionRouter from './router/batch-session.route';
 import chatRouter from './router/chat.route';
 import userRouter from './router/user.route';
+import assessmentRouter from './router/assessment.route';
+import submissionRouter from './router/submission.route';
+import progressRouter from './router/progress.route';
 const app: Application = express();
 // middlewares
 app.use(express.json());
@@ -42,6 +45,9 @@ app.use('/api/v1/batch', batchRouter);
 app.use('/api/v1/batch-module', batchModuleRouter);
 app.use('/api/v1/batch-module-session', batchSessionRouter);
 app.use('/api/v1/batch-session/chats', chatRouter);
+app.use('/api/v1/assessment', assessmentRouter);
+app.use('/api/v1/submission', submissionRouter);
+app.use('/api/v1/progress', progressRouter);
 
 // 404 Handler
 app.use((req: Request, _: Response, next: NextFunction) => {
