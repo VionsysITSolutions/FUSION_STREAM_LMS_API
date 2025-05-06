@@ -31,6 +31,18 @@ enum paymentStatus {
   completed
   failed
 }
+
+
+enum assessmentType {
+  module
+  final
+}
+
+enum attendanceType {
+  live
+  recorded
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   firstName    String
@@ -57,6 +69,10 @@ model User {
   senderMessages chat_message[] @relation("Sender")
   userTransactions transaction[] @relation("UserTransaction")
   createdCoupons coupon[]       @relation("CreatedCoupons")
+  studentAssessmentSubmission assessment_submission[] @relation("StudentAssessmentSubmission")
+  studentModuleProgress module_progress[] @relation("StudentModuleProgress")
+  studentSessionAttendance session_attendance[] @relation("StudentSessionAttendance")
+  studentCourseProgress course_progress[] @relation("StudentCourseProgress")
 }
 
 model Course {
@@ -80,6 +96,7 @@ model Course {
   batches       batch[]         @relation("Batches")
   enrollments   courseEnrollment[] @relation("CourseEnrollments")
   transactions  transaction[]  @relation("CourseTransaction")
+  finalAssessments final_assessment[] @relation("CourseFinalAssessment")
 }
 
 model courseEnrollment{
@@ -133,6 +150,8 @@ model batch {
   batchEnrollments batchEnrollment[] @relation("BatchEnrollments")
   chatMessages chat_message[] @relation("Batch")
   batchTransactions transaction[] @relation("BatchTransaction")
+  batchFinalAssessments final_assessment[] @relation("BatchFinalAssessment")
+  courseProgress course_progress[] @relation("CourseProgress")
 }
 
 model batch_module {
@@ -148,6 +167,9 @@ model batch_module {
 
   // Relationships
   batchModuleSessions batch_module_session[] @relation("BatchModuleSessions")
+  moduleAssessments module_assessment[] @relation("BatchModuleAssessment")
+  moduleProgress module_progress[] @relation("ModuleProgress")
+  
 }
 
 model batch_module_session {
@@ -164,6 +186,7 @@ model batch_module_session {
 
   // Relationships
   chatMessages chat_message[] @relation("BatchSession")
+  sessionAttendance session_attendance[] @relation("SessionAttendance")
 }
 
 model batchEnrollment{
@@ -225,4 +248,132 @@ model coupon{
 
   // Relationships
   transactions transaction[] @relation("CouponTransaction")
+}
+
+
+model module_assessment {
+  id        String   @id @default(cuid())
+  title     String
+  totalMarks Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  batchModuleId String
+  batchModule   batch_module @relation("BatchModuleAssessment", fields: [batchModuleId], references: [id])
+
+  // Relationships
+  questions   questions[] @relation("QuestionsOnModuleAssessment")
+  submissions assessment_submission[] @relation("SubmissionsOnModuleAssessment")
+}
+
+model final_assessment {
+  id         String   @id @default(cuid())
+  title      String
+  totalMarks Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  batchId    String
+  batch      batch    @relation("BatchFinalAssessment", fields: [batchId], references: [id])
+  courseId   String
+  course     Course   @relation("CourseFinalAssessment", fields: [courseId], references: [id])
+
+  // Relationships
+  questions   questions[] @relation("QuestionsOnFinalAssessment")
+  submissions assessment_submission[] @relation("SubmissionsOnFinalAssessment")
+}
+
+model questions {
+  id               String           @id @default(cuid())
+  assessmentType   assessmentType
+  questionText     String
+  marks            Decimal
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Polymorphic references
+  moduleAssessmentId String? 
+  finalAssessmentId  String?
+
+  moduleAssessment module_assessment? @relation("QuestionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id])
+  finalAssessment  final_assessment?  @relation("QuestionsOnFinalAssessment", fields: [finalAssessmentId], references: [id])
+
+  // Relationships
+  questionOptions options[]      @relation("QuestionOptions")
+  submittedAnswers user_answer[] @relation("Question")
+}
+
+model options{
+  id             String  @id @default(cuid())
+  optionText   String
+  isCorrect    Boolean
+  questionId   String
+  question    questions @relation("QuestionOptions", fields: [questionId], references: [id])
+
+  // Relationships
+  selectedBy user_answer[] @relation("SelectedOption")
+}
+
+model assessment_submission {
+  id               String   @id @default(cuid())
+  studentId        Int
+  student          User     @relation("StudentAssessmentSubmission", fields: [studentId], references: [id])
+  assessmentType   assessmentType
+  obtainedMarks    Decimal
+  submittedAt      DateTime @default(now())
+
+  // Polymorphic
+  moduleAssessmentId String?
+  finalAssessmentId  String?
+
+  moduleAssessment module_assessment? @relation("SubmissionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id])
+  finalAssessment  final_assessment?  @relation("SubmissionsOnFinalAssessment", fields: [finalAssessmentId], references: [id])
+
+  // Relationships
+  answers user_answer[] @relation("SubmissionAnswers")
+}
+
+
+model user_answer {
+  id                 String   @id @default(cuid())
+  questionId         String
+  question           questions @relation("Question", fields: [questionId], references: [id])
+  selectedOptionId   String
+  selectedOption     options  @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+  submissionId       String
+  submission         assessment_submission @relation("SubmissionAnswers", fields: [submissionId], references: [id])
+  answeredAt         DateTime @default(now())
+}
+
+
+model module_progress{
+  id        String   @id @default(cuid())
+  studentId Int
+  student   User     @relation("StudentModuleProgress", fields: [studentId], references: [id])
+  moduleId  String
+  module    batch_module @relation("ModuleProgress", fields: [moduleId], references: [id])
+  isCompleted Boolean @default(false)
+  completedAt DateTime?
+}
+
+
+model session_attendance{
+  id        String   @id @default(cuid())
+  studentId Int
+  student   User     @relation("StudentSessionAttendance", fields: [studentId], references: [id])
+  sessionId String
+  session   batch_module_session @relation("SessionAttendance", fields: [sessionId], references: [id])
+  attendanceType attendanceType @default(live)
+  isAttended Boolean @default(false)
+  attendedAt DateTime?
+}
+
+
+model course_progress{
+  id        String   @id @default(cuid())
+  batchId   String
+  batch     batch    @relation("CourseProgress", fields: [batchId], references: [id])
+  studentId Int
+  student   User     @relation("StudentCourseProgress", fields: [studentId], references: [id])
+  progrssPercent Float
+  isCompleted Boolean @default(false)
+  updatedAt DateTime @updatedAt
 }

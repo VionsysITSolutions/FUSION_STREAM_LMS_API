@@ -5,7 +5,7 @@ import userServices from '../service/user.service';
 import httpError from '../util/httpError';
 import catchAsync from '../util/catchAsync';
 import { JwtPayload } from '../types/types';
-import { User } from '../../prisma/generated/prisma';
+import { User } from '@prisma/client';
 
 declare module 'express-serve-static-core' {
     interface Request {
