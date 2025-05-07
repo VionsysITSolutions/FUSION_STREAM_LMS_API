@@ -52,8 +52,9 @@ export default {
         if (!existingCourse) {
             return httpError(next, new Error('Course not found'), req, 404);
         }
+        const thumbnailUrl = dataResult.data.thumbnailUrl ?? existingCourse.thumbnailUrl;
 
-        const updatedCourse = await courseService.updateCourse(idResult.data.id, dataResult.data);
+        const updatedCourse = await courseService.updateCourse(idResult.data.id, { ...dataResult.data, thumbnailUrl });
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { course: updatedCourse });
     }),
 

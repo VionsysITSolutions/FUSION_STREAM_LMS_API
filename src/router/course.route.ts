@@ -11,7 +11,7 @@ courseRouter
     .route('/:id')
     .get(courseController.getCourseById)
     .put(authenticateUser('instructor', 'admin'), courseController.updateCourse)
-    .delete(authenticateUser('admin'), courseController.deleteCourse);
+    .delete(authenticateUser('instructor', 'admin'), courseController.deleteCourse);
 courseRouter.route('/approve/:id').post(authenticateUser('admin'), courseController.approveCourse);
 courseRouter.route('/creator/:createdById').get(courseController.getCreatedCourses);
 
