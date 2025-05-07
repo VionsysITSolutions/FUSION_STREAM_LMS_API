@@ -104,7 +104,8 @@ export default {
             },
             include: {
                 courseModules: true,
-                enrollments: true
+                enrollments: true,
+                createdBy: true
             }
         });
     }

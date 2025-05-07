@@ -64,7 +64,7 @@ export type UpdateCourseBody = {
     isApproved?: boolean;
     approvedById?: number;
     isDeleted?: boolean;
-    thumnailUrl?: string;
+    thumbnailUrl?: string;
     price?: number;
 };
 
