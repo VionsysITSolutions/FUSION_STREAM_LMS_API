@@ -59,7 +59,7 @@ export default {
         }
 
         const token = jwt.sign(
-            { userId: user?.id, role: user?.role, name: `${user?.firstName}+" "+${user?.lastName}` },
+            { userId: user?.id, role: user?.role, name: `${user?.firstName}{" "}${user?.lastName}` },
             config.JWT_SECRET as string,
             {
                 expiresIn: '24h'
@@ -107,7 +107,7 @@ export default {
             return httpError(next, new Error(responseMessage.INVALID_EXPIRED_OTP), req, 400);
         }
 
-        const token = jwt.sign({ userId: user.id, role: user.role, name: `${user?.firstName}+" "+${user?.lastName}` }, config.JWT_SECRET as string, {
+        const token = jwt.sign({ userId: user.id, role: user.role, name: `${user?.firstName}{" "}${user?.lastName}` }, config.JWT_SECRET as string, {
             expiresIn: '24h'
         });
 

@@ -22,7 +22,11 @@ export default {
     getAllBatches: async () => {
         return prisma.batch.findMany({
             include: {
-                course: true,
+                course:{
+                    include:{
+                        createdBy:true
+                    }
+                },
                 batchModules: true,
                 batchEnrollments: true
             }
@@ -33,8 +37,9 @@ export default {
         return prisma.batch.findUnique({
             where: { id },
             include: {
-                course: true,
-                batchModules: true,
+                batchModules: {include:{
+                    batchModuleSessions:true,
+                }},
                 batchEnrollments: true
             }
         });

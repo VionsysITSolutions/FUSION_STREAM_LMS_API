@@ -126,9 +126,8 @@ export const createBatchSessionSchema = z.object({
         .string({
             required_error: 'Meet link is required',
             invalid_type_error: 'Meet link must be a string'
-        })
-        .url({ message: 'Meet link must be a valid URL' }),
-
+        }),
+    
     recordingURL: z
         .string({
             invalid_type_error: 'Recording URL must be a string'
