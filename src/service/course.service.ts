@@ -43,6 +43,12 @@ export default {
                         moduleContent: true
                     }
                 },
+                batches: {
+                    include: {
+                        batchModules: true,
+                        batchEnrollments: true
+                    }
+                },
                 enrollments: {
                     include: {
                         student: true
@@ -70,11 +76,11 @@ export default {
         });
     },
 
-    approveCourse: async (id: string, approvedById: number) => {
+    approveCourse: async (id: string, approvedById: number, courseState: boolean) => {
         return prisma.course.update({
             where: { id },
             data: {
-                isApproved: true,
+                isApproved: !courseState,
                 approvedById
             },
             include: {

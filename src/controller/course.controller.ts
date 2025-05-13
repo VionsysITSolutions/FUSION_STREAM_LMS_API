@@ -87,7 +87,7 @@ export default {
             return httpError(next, new Error('User ID is required'), req, 400);
         }
 
-        const approvedCourse = await courseService.approveCourse(result.data.id, req.user.id);
+        const approvedCourse = await courseService.approveCourse(result.data.id, req.user.id, existingCourse.isApproved);
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { course: approvedCourse });
     }),
 
