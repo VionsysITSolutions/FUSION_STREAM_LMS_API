@@ -43,6 +43,12 @@ enum attendanceType {
   recorded
 }
 
+enum mediaType {
+  video
+  pdf
+  externalLink
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   firstName    String
@@ -73,6 +79,7 @@ model User {
   studentModuleProgress module_progress[] @relation("StudentModuleProgress")
   studentSessionAttendance session_attendance[] @relation("StudentSessionAttendance")
   studentCourseProgress course_progress[] @relation("StudentCourseProgress")
+  instructorBatches batch[] @relation("BatchInstructors")
 }
 
 model Course {
@@ -103,10 +110,12 @@ model courseEnrollment{
   @@map("course_enrollments")
   id        String   @id @default(cuid())
   courseId  String
-  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id])
+  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id],onDelete: Cascade)
   studentId Int
   student   User     @relation("StudentEnrollments", fields: [studentId], references: [id])
   enrolledAt DateTime @default(now())
+  transactionId String?
+  transaction transaction? @relation("CourseTransaction", fields: [transactionId], references: [id])
 }
 
 model course_module {
@@ -114,7 +123,7 @@ model course_module {
   title     String
   summary   String?
   courseId  String
-  course    Course   @relation("CourseModules", fields: [courseId], references: [id])
+  course    Course   @relation("CourseModules", fields: [courseId], references: [id],onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -127,8 +136,9 @@ model course_module_content {
   name        String
   description String?
   mediaUrl    String
+  mediaType mediaType @default(video)
   moduleId    String
-  module      course_module @relation("ModuleContent", fields: [moduleId], references: [id])
+  module      course_module @relation("ModuleContent", fields: [moduleId], references: [id],onDelete: Cascade)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -139,9 +149,11 @@ model batch {
   description   String
   startDate     DateTime
   duration      Int
+  // capacity      Int
   batchTimeSlot batchTimeSlot
+  isCompleted   Boolean      @default(false)
   courseId      String
-  course        Course        @relation("Batches", fields: [courseId], references: [id])
+  course        Course        @relation("Batches", fields: [courseId], references: [id],onDelete: Cascade)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -149,7 +161,7 @@ model batch {
   batchModules batch_module[] @relation("BatchModules")
   batchEnrollments batchEnrollment[] @relation("BatchEnrollments")
   chatMessages chat_message[] @relation("Batch")
-  batchTransactions transaction[] @relation("BatchTransaction")
+   instructors User[] @relation("BatchInstructors")
   batchFinalAssessments final_assessment[] @relation("BatchFinalAssessment")
   courseProgress course_progress[] @relation("CourseProgress")
 }
@@ -161,7 +173,7 @@ model batch_module {
   instructorId Int
   instructor   User     @relation("BatchModuleInstructor", fields: [instructorId], references: [id])
   batchId      String
-  batch        batch    @relation("BatchModules", fields: [batchId], references: [id])
+  batch        batch    @relation("BatchModules", fields: [batchId], references: [id],onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -180,7 +192,7 @@ model batch_module_session {
   meetLink      String
   recordingURL  String?
   batchModuleId String
-  batchModule   batch_module @relation("BatchModuleSessions", fields: [batchModuleId], references: [id])
+  batchModule   batch_module @relation("BatchModuleSessions", fields: [batchModuleId], references: [id],onDelete: Cascade)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -193,7 +205,7 @@ model batchEnrollment{
   @@map("batch_enrollments")
   id        String   @id @default(cuid())
   batchId   String
-  batch     batch    @relation("BatchEnrollments", fields: [batchId], references: [id])
+  batch     batch    @relation("BatchEnrollments", fields: [batchId], references: [id],onDelete: Cascade)
   studentId Int
   student   User     @relation("StudentBatchEnrollments", fields: [studentId], references: [id])
   enrolledAt DateTime @default(now())
@@ -204,14 +216,14 @@ model chat_message{
   senderId   Int
   sender     User     @relation("Sender", fields: [senderId], references: [id])
   batchId   String
-  batch     batch    @relation("Batch", fields: [batchId], references: [id])
+  batch     batch    @relation("Batch", fields: [batchId], references: [id],onDelete: Cascade)
   messageTxt String
   replyToMessageId String?
   replyToMessage chat_message? @relation("ReplyToMessage", fields: [replyToMessageId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   batchSessionId String?
-  batchSession batch_module_session? @relation("BatchSession", fields: [batchSessionId], references: [id])
+  batchSession batch_module_session? @relation("BatchSession", fields: [batchSessionId], references: [id],onDelete: Cascade)
 
   // Relationships
   replies chat_message[] @relation("ReplyToMessage")
@@ -219,20 +231,22 @@ model chat_message{
 
 model transaction{
   id        String   @id @default(cuid())
-  orderId   String
+  orderId   String @unique
   paymentId String?
   paymentStatus paymentStatus @default(pending)
   amount    Decimal
   courseId  String
-  course    Course   @relation("CourseTransaction", fields: [courseId], references: [id])
+  course    Course   @relation("CourseTransaction", fields: [courseId], references: [id],onDelete: Cascade)
   userId    Int
   user      User     @relation("UserTransaction", fields: [userId], references: [id])
-  batchId   String?
-  batch     batch?    @relation("BatchTransaction", fields: [batchId], references: [id])
-  couponId String?
+  couponId  String?
   coupon    coupon?   @relation("CouponTransaction", fields: [couponId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  enrollments courseEnrollment[] @relation("CourseTransaction")
+ 
+  @@index([userId])
+  @@index([orderId])
 }
 
 model coupon{
@@ -258,7 +272,7 @@ model module_assessment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   batchModuleId String
-  batchModule   batch_module @relation("BatchModuleAssessment", fields: [batchModuleId], references: [id])
+  batchModule   batch_module @relation("BatchModuleAssessment", fields: [batchModuleId], references: [id],onDelete: Cascade)
 
   // Relationships
   questions   questions[] @relation("QuestionsOnModuleAssessment")
@@ -272,9 +286,9 @@ model final_assessment {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   batchId    String
-  batch      batch    @relation("BatchFinalAssessment", fields: [batchId], references: [id])
+  batch      batch    @relation("BatchFinalAssessment", fields: [batchId], references: [id],onDelete: Cascade)
   courseId   String
-  course     Course   @relation("CourseFinalAssessment", fields: [courseId], references: [id])
+  course     Course   @relation("CourseFinalAssessment", fields: [courseId], references: [id],onDelete: Cascade)
 
   // Relationships
   questions   questions[] @relation("QuestionsOnFinalAssessment")
@@ -293,8 +307,8 @@ model questions {
   moduleAssessmentId String? 
   finalAssessmentId  String?
 
-  moduleAssessment module_assessment? @relation("QuestionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id])
-  finalAssessment  final_assessment?  @relation("QuestionsOnFinalAssessment", fields: [finalAssessmentId], references: [id])
+  moduleAssessment module_assessment? @relation("QuestionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id],onDelete: Cascade)
+  finalAssessment  final_assessment?  @relation("QuestionsOnFinalAssessment", fields: [finalAssessmentId], references: [id],onDelete: Cascade)
 
   // Relationships
   questionOptions options[]      @relation("QuestionOptions")
@@ -306,7 +320,7 @@ model options{
   optionText   String
   isCorrect    Boolean
   questionId   String
-  question    questions @relation("QuestionOptions", fields: [questionId], references: [id])
+  question    questions @relation("QuestionOptions", fields: [questionId], references: [id],onDelete: Cascade)
 
   // Relationships
   selectedBy user_answer[] @relation("SelectedOption")
@@ -324,8 +338,8 @@ model assessment_submission {
   moduleAssessmentId String?
   finalAssessmentId  String?
 
-  moduleAssessment module_assessment? @relation("SubmissionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id])
-  finalAssessment  final_assessment?  @relation("SubmissionsOnFinalAssessment", fields: [finalAssessmentId], references: [id])
+  moduleAssessment module_assessment? @relation("SubmissionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id],onDelete: Cascade)
+  finalAssessment  final_assessment?  @relation("SubmissionsOnFinalAssessment", fields: [finalAssessmentId], references: [id],onDelete: Cascade)
 
   // Relationships
   answers user_answer[] @relation("SubmissionAnswers")
@@ -335,11 +349,11 @@ model assessment_submission {
 model user_answer {
   id                 String   @id @default(cuid())
   questionId         String
-  question           questions @relation("Question", fields: [questionId], references: [id])
+  question           questions @relation("Question", fields: [questionId], references: [id],onDelete: Cascade)
   selectedOptionId   String
-  selectedOption     options  @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+  selectedOption     options  @relation("SelectedOption", fields: [selectedOptionId], references: [id],onDelete: Cascade)
   submissionId       String
-  submission         assessment_submission @relation("SubmissionAnswers", fields: [submissionId], references: [id])
+  submission         assessment_submission @relation("SubmissionAnswers", fields: [submissionId], references: [id],onDelete: Cascade)
   answeredAt         DateTime @default(now())
 }
 
@@ -360,7 +374,7 @@ model session_attendance{
   studentId Int
   student   User     @relation("StudentSessionAttendance", fields: [studentId], references: [id])
   sessionId String
-  session   batch_module_session @relation("SessionAttendance", fields: [sessionId], references: [id])
+  session   batch_module_session @relation("SessionAttendance", fields: [sessionId], references: [id],onDelete: Cascade)
   attendanceType attendanceType @default(live)
   isAttended Boolean @default(false)
   attendedAt DateTime?
@@ -370,7 +384,7 @@ model session_attendance{
 model course_progress{
   id        String   @id @default(cuid())
   batchId   String
-  batch     batch    @relation("CourseProgress", fields: [batchId], references: [id])
+  batch     batch    @relation("CourseProgress", fields: [batchId], references: [id],onDelete: Cascade)
   studentId Int
   student   User     @relation("StudentCourseProgress", fields: [studentId], references: [id])
   progrssPercent Float
