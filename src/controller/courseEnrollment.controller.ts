@@ -1,6 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../util/catchAsync';
-import { CreateTransactionInput, batchEnrollmentSchema, createOrderSchema } from '../zod/courseEnrollment.schema';
+import {
+    CreateTransactionInput,
+    batchEnrollmentSchema,
+    checkLoggedInUserEnrolledInTheCourseBodySchema,
+    createOrderSchema
+} from '../zod/courseEnrollment.schema';
 import quicker from '../util/quicker';
 import httpError from '../util/httpError';
 import { Role } from '@prisma/client';
@@ -21,59 +26,42 @@ interface RequestWithUser extends Request {
 
 export default {
     createOrder: catchAsync(async (req: RequestWithUser, res: Response, next: NextFunction) => {
-        // check student is enrolled in the course
+        // Check if transaction already exists for this course & user
         const isEnrolled = await courseEnrollmentService.checkStudentEnrolledInTheCourse(Number(req.user?.id), req.body.courseId);
         if (isEnrolled) {
-            return httpError(next, new Error('Student is already enrolled in the course'), req, 400);
+            return httpError(next, new Error('Your already enrolled in the course'), req, 400);
         }
-        // generate razorpay order id
+        const amountDecimal = req.body.amount;
+        const amount = parseInt(amountDecimal.toString());
+        // Create Razorpay order
         const razorpayOrder = await razorpay.orders.create({
-            amount: req.body.amount,
+            amount: amount,
             currency: 'INR',
             receipt: `receipt_${Date.now()}`,
             notes: {
                 courseId: req.body.courseId,
-                userId: Number(req.user?.id)
+                userId: String(req.user?.id),
+                batchId: String(req.body.batchId)
             }
         });
-        // Validate the input
-        const transactionValidationResult = createOrderSchema.safeParse({
-            ...req.body,
-            userId: req.user?.id
-        });
-        if (!transactionValidationResult.success) {
-            return httpError(next, new Error(quicker.zodError(transactionValidationResult)), req, 400);
+
+        // Validate input
+        const validation = createOrderSchema.safeParse({ ...req.body, userId: req.user?.id });
+        if (!validation.success) {
+            return httpError(next, new Error(quicker.zodError(validation)), req, 400);
         }
-        // Create the transaction
+
+        // Create transaction (status: PENDING)
         const transaction = await courseEnrollmentService.createOrder({
             orderId: razorpayOrder.id,
-            ...transactionValidationResult.data
+            ...validation.data
         });
 
-        // create course enrollment
-        const courseEnrollment = await courseEnrollmentService.createCourseEnrollment(transaction);
-        if (!courseEnrollment) {
-            return httpError(next, new Error('Course enrollment not created'), req, 400);
-        }
-
-        // batch enrollment
-        const batchEnrollmentValidationResult = batchEnrollmentSchema.safeParse({ studentId: req.user?.id, batchId: req.body.batchId });
-
-        if (!batchEnrollmentValidationResult.success) {
-            return httpError(next, new Error(quicker.zodError(batchEnrollmentValidationResult)), req, 400);
-        }
-
-        const batchEnrollment = await courseEnrollmentService.createBatchEnrollment({
-            userId: transaction.userId,
-            batchId: batchEnrollmentValidationResult.data.batchId
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+            orderId: razorpayOrder.id,
+            amount: amount,
+            transactionId: transaction.id
         });
-
-        if (!batchEnrollment) {
-            return httpError(next, new Error('Batch enrollment not created'), req, 400);
-        }
-
-        // Response
-        httpResponse(req, res, 200, responseMessage.SUCCESS, { transaction });
     }),
 
     razorpayWebhook: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -94,6 +82,9 @@ export default {
                     entity?: {
                         id?: string;
                         order_id?: string;
+                        notes?: {
+                            batchId?: string;
+                        };
                     };
                 };
             };
@@ -119,6 +110,33 @@ export default {
                 return httpError(next, new Error('Transaction update failed'), req, 500);
             }
 
+            // Now enroll the student in course and batch
+            const courseEnrollment = await courseEnrollmentService.createCourseEnrollment({
+                userId: updatedTransaction.userId,
+                courseId: updatedTransaction.courseId,
+                transactionId: updatedTransaction.id
+            });
+            if (!courseEnrollment) {
+                return httpError(next, new Error('Course enrollment failed'), req, 500);
+            }
+
+            const batchValidation = batchEnrollmentSchema.safeParse({
+                studentId: updatedTransaction.userId,
+                batchId: payment.notes?.batchId
+            });
+
+            if (!batchValidation.success) {
+                return httpError(next, new Error(quicker.zodError(batchValidation)), req, 400);
+            }
+
+            const batchEnrollment = await courseEnrollmentService.createBatchEnrollment({
+                userId: updatedTransaction.userId,
+                batchId: batchValidation.data.batchId
+            });
+
+            if (!batchEnrollment) {
+                return httpError(next, new Error('Batch enrollment failed'), req, 500);
+            }
             return httpResponse(req, res, 200, 'Transaction updated successfully', {
                 transactionId: updatedTransaction.id
             });
@@ -148,5 +166,33 @@ export default {
         }
 
         return httpResponse(req, res, 200, 'Webhook received, event not processed', {});
+    }),
+
+    deleteTransaction: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const transactionId = req.params.transactionId;
+        const transaction = await courseEnrollmentService.getTransactionById(transactionId);
+        if (!transaction) {
+            return httpError(next, new Error('Transaction not found'), req, 404);
+        }
+
+        await courseEnrollmentService.deleteTransaction(transactionId);
+        return httpResponse(req, res, 200, 'Transaction deleted successfully', {});
+    }),
+
+    // getEnrolledCoursesByStudentId: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    //     const data = await courseEnrollmentService.getEnrolledCourses(req.user.id);
+    // }),
+
+    checkLoggedInUserEnrolledInTheCourse: catchAsync(async (req: RequestWithUser, res: Response, next: NextFunction) => {
+        const validation = checkLoggedInUserEnrolledInTheCourseBodySchema.safeParse({
+            studentId: Number(req.user?.id),
+            courseId: req.params.courseId
+        });
+        if (!validation.success) {
+            return httpError(next, new Error(quicker.zodError(validation)), req, 400);
+        }
+
+        const isEnrolled = await courseEnrollmentService.checkStudentEnrolledInTheCourse(validation.data.studentId, validation.data.courseId);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { isEnrolled });
     })
 };
