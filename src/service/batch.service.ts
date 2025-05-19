@@ -7,6 +7,7 @@ export default {
         name: string;
         description: string;
         startDate: Date;
+        capacity: number;
         duration: number;
         batchTimeSlot: 'morning' | 'afternoon' | 'evening';
         courseId: string;
@@ -22,9 +23,9 @@ export default {
     getAllBatches: async () => {
         return prisma.batch.findMany({
             include: {
-                course:{
-                    include:{
-                        createdBy:true
+                course: {
+                    include: {
+                        createdBy: true
                     }
                 },
                 batchModules: true,
@@ -37,10 +38,13 @@ export default {
         return prisma.batch.findUnique({
             where: { id },
             include: {
-                batchModules: {include:{
-                    batchModuleSessions:true,
-                }},
-                batchEnrollments: true
+                batchModules: {
+                    include: {
+                        batchModuleSessions: true
+                    }
+                },
+                batchEnrollments: true,
+                instructors: true
             }
         });
     },

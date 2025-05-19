@@ -71,6 +71,17 @@ export const paymentVerificationSchema = z.object({
     })
 });
 
+export const checkLoggedInUserEnrolledInTheCourseBodySchema = z.object({
+    studentId: z.number({
+        required_error: 'Student ID is required',
+        invalid_type_error: 'Student ID must be a number'
+    }),
+    courseId: z.string({
+        required_error: 'Course ID is required',
+        invalid_type_error: 'Course ID must be a string'
+    })
+});
+
 export type batchEnrollmentSchema = z.infer<typeof batchEnrollmentSchema>;
 export type StudentCourseInpput = z.infer<typeof studentCourseEnrollmentSchema>;
 export type CreateTransactionInput = z.infer<typeof createOrderSchema>;

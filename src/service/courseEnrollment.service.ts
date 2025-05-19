@@ -12,6 +12,16 @@ export default {
         return isEnrolled;
     },
 
+    getEnrolledCourses: async (studentId: number) => {
+        const courseEnrolled = await prisma.courseEnrollment.findMany({
+            where: {
+                studentId: studentId
+            }
+        });
+
+        return courseEnrolled;
+    },
+
     createOrder: async (order: {
         orderId: string;
         userId: number;
@@ -53,11 +63,12 @@ export default {
         });
         return updatedTransaction;
     },
-    createCourseEnrollment: async (transaction: { userId: number; courseId: string }) => {
+    createCourseEnrollment: async (transaction: { userId: number; courseId: string; transactionId: string }) => {
         const enrollment = await prisma.courseEnrollment.create({
             data: {
                 studentId: transaction.userId,
-                courseId: transaction.courseId
+                courseId: transaction.courseId,
+                transactionId: transaction.transactionId
             },
             include: {
                 transaction: {
@@ -87,5 +98,21 @@ export default {
             }
         });
         return failedTransaction;
+    },
+    getTransactionById: async (transactionId: string) => {
+        const transaction = await prisma.transaction.findUnique({
+            where: {
+                id: transactionId
+            }
+        });
+        return transaction;
+    },
+    deleteTransaction: async (transactionId: string) => {
+        const deletedTransaction = await prisma.transaction.delete({
+            where: {
+                id: transactionId
+            }
+        });
+        return deletedTransaction;
     }
 };

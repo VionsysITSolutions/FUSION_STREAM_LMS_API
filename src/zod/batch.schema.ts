@@ -36,6 +36,10 @@ export const createBatchSchema = z.object({
         required_error: 'Batch time slot is required',
         invalid_type_error: 'Invalid time slot selected'
     }),
+    capacity: z.number({
+        required_error: 'Capacity is required',
+        invalid_type_error: 'Capacity must be a number'
+    }),
 
     courseId: z
         .string({
@@ -122,12 +126,11 @@ export const createBatchSessionSchema = z.object({
             message: 'Session date must be a valid date'
         }),
 
-    meetLink: z
-        .string({
-            required_error: 'Meet link is required',
-            invalid_type_error: 'Meet link must be a string'
-        }),
-    
+    meetLink: z.string({
+        required_error: 'Meet link is required',
+        invalid_type_error: 'Meet link must be a string'
+    }),
+
     recordingURL: z
         .string({
             invalid_type_error: 'Recording URL must be a string'

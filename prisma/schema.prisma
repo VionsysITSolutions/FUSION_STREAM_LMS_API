@@ -149,7 +149,7 @@ model batch {
   description   String
   startDate     DateTime
   duration      Int
-  // capacity      Int
+  capacity      Int
   batchTimeSlot batchTimeSlot
   isCompleted   Boolean      @default(false)
   courseId      String
@@ -189,7 +189,7 @@ model batch_module_session {
   topicName     String
   summary       String
   sessionDate   DateTime
-  meetLink      String
+  meetLink      String @unique
   recordingURL  String?
   batchModuleId String
   batchModule   batch_module @relation("BatchModuleSessions", fields: [batchModuleId], references: [id],onDelete: Cascade)
@@ -234,7 +234,7 @@ model transaction{
   orderId   String @unique
   paymentId String?
   paymentStatus paymentStatus @default(pending)
-  amount    Decimal
+  amount    Int
   courseId  String
   course    Course   @relation("CourseTransaction", fields: [courseId], references: [id],onDelete: Cascade)
   userId    Int

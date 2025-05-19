@@ -46,12 +46,18 @@ export default {
                 batches: {
                     include: {
                         batchModules: true,
-                        batchEnrollments: true
+                        batchEnrollments: true,
+                        instructors: true
                     }
                 },
                 enrollments: {
                     include: {
-                        student: true
+                        student: true,
+                        transaction: {
+                            select: {
+                                paymentStatus: true
+                            }
+                        }
                     }
                 }
             }
