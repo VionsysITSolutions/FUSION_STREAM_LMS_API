@@ -82,6 +82,14 @@ export const checkLoggedInUserEnrolledInTheCourseBodySchema = z.object({
     })
 });
 
+export const getCourseOrBatchEnrollmentRequest = z.object({
+    studentId: z.number({
+        required_error: 'Student ID is required',
+        invalid_type_error: 'Student ID must be a number'
+    })
+});
+
+export type courseEnrollmentRequestSchema = z.infer<typeof getCourseOrBatchEnrollmentRequest>;
 export type batchEnrollmentSchema = z.infer<typeof batchEnrollmentSchema>;
 export type StudentCourseInpput = z.infer<typeof studentCourseEnrollmentSchema>;
 export type CreateTransactionInput = z.infer<typeof createOrderSchema>;

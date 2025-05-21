@@ -16,12 +16,52 @@ export default {
         const courseEnrolled = await prisma.courseEnrollment.findMany({
             where: {
                 studentId: studentId
+            },
+            include: {
+                course: true
             }
         });
 
         return courseEnrolled;
     },
 
+    getEnrolledBatches: async (studentId: number) => {
+        const enrolledBatches = await prisma.batchEnrollment.findMany({
+            where: {
+                studentId: studentId
+            },
+            include: {
+                batch: {
+                    include: {
+                        course: true
+                    }
+                }
+            }
+        });
+
+        return enrolledBatches;
+    },
+    getBatchEnrollmentById: async (id: string) => {
+        const enrollements = await prisma.batchEnrollment.findFirst({
+            where: {
+                id: id
+            },
+            include: {
+                batch: {
+                    include: {
+                        batchModules: {
+                            include: {
+                                batchModuleSessions: true
+                            }
+                        },
+                        instructors: true,
+                        course: true
+                    }
+                }
+            }
+        });
+        return enrollements;
+    },
     createOrder: async (order: {
         orderId: string;
         userId: number;

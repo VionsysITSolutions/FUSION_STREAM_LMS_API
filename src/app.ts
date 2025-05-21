@@ -20,7 +20,7 @@ import assessmentRouter from './router/assessment.route';
 import submissionRouter from './router/submission.route';
 import progressRouter from './router/progress.route';
 import courseEnrollmentRouter from './router/courseEnrollment.route';
-// import webhookRouter from './router/webhooks.route';
+import webhookRouter from './router/webhooks.route';
 const app: Application = express();
 // middlewares
 app.use(express.json());
@@ -51,7 +51,7 @@ app.use('/api/v1/assessment', assessmentRouter);
 app.use('/api/v1/submission', submissionRouter);
 app.use('/api/v1/progress', progressRouter);
 app.use('/api/v1/enrollment', courseEnrollmentRouter);
-// app.use('/api/v1/webhook', express.raw({ type: 'application/json' }), webhookRouter);
+app.use('/api/v1/webhook', express.raw({ type: 'application/json' }), webhookRouter);
 
 // 404 Handler
 app.use((req: Request, _: Response, next: NextFunction) => {

@@ -12,7 +12,7 @@ progressRouter.route('/module/:studentId/:moduleId').get(authenticateUser(), pro
 // Session Attendance Routes
 progressRouter.route('/attendance').post(authenticateUser('student'), progressController.markSessionAttendance);
 
-progressRouter.route('/attendance/:studentId/:sessionId').get(authenticateUser(), progressController.getSessionAttendance);
+progressRouter.route('/attendance').get(authenticateUser(), progressController.getSessionAttendance);
 
 // Course Progress Routes
 progressRouter.route('/course').post(authenticateUser('student'), progressController.updateCourseProgress);

@@ -29,7 +29,7 @@ export default {
     }),
 
     markSessionAttendance: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const result = sessionAttendanceSchema.safeParse(req.body);
+        const result = sessionAttendanceSchema.safeParse({ ...req.body, studentId: req.user?.id });
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }
@@ -39,12 +39,12 @@ export default {
     }),
 
     getSessionAttendance: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const { studentId, sessionId } = req.params;
-        if (!studentId || !sessionId) {
+        const studentId = req.user?.id;
+        if (!studentId) {
             return httpError(next, new Error('Student ID and Session ID are required'), req, 400);
         }
 
-        const attendance = await progressService.getSessionAttendance(Number(studentId), sessionId);
+        const attendance = await progressService.getSessionAttendance(Number(studentId));
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { attendance });
     }),
 

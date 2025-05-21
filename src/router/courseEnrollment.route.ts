@@ -8,4 +8,7 @@ courseEnrollmentRouter.route('/create-order').post(authenticateUser('student'), 
 courseEnrollmentRouter.route('/webhook').post(courseEnrollmentController.razorpayWebhook);
 courseEnrollmentRouter.route('/:transactionId').delete(authenticateUser(), courseEnrollmentController.deleteTransaction);
 courseEnrollmentRouter.route('/check-enrolled/:courseId').get(authenticateUser(), courseEnrollmentController.checkLoggedInUserEnrolledInTheCourse);
+courseEnrollmentRouter.route('/').get(authenticateUser('student'), courseEnrollmentController.getEnrolledCoursesByStudentId);
+courseEnrollmentRouter.route('/batches').get(authenticateUser(), courseEnrollmentController.getStudentEnrolledBatches);
+courseEnrollmentRouter.route('/batches/:id').get(authenticateUser('student'), courseEnrollmentController.getEnrolledBatchById);
 export default courseEnrollmentRouter;
