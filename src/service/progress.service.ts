@@ -56,7 +56,7 @@ export default {
                 data: {
                     attendanceType: data.attendanceType,
                     isAttended: data.isAttended,
-                    attendedAt: data.attendedAt || new Date()
+                    attendedAt: data.attendedAt
                 },
                 include: {
                     student: true,
@@ -68,7 +68,7 @@ export default {
         return prisma.session_attendance.create({
             data: {
                 ...data,
-                attendedAt: data.attendedAt || new Date()
+                attendedAt: data.attendedAt
             },
             include: {
                 student: true,
@@ -77,9 +77,9 @@ export default {
         });
     },
 
-    getSessionAttendance: async (studentId: number, sessionId: string) => {
-        return prisma.session_attendance.findFirst({
-            where: { studentId, sessionId },
+    getSessionAttendance: async (studentId: number) => {
+        return prisma.session_attendance.findMany({
+            where: { studentId },
             include: {
                 student: true,
                 session: true

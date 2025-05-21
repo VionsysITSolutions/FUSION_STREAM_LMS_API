@@ -4,7 +4,8 @@ import {
     CreateTransactionInput,
     batchEnrollmentSchema,
     checkLoggedInUserEnrolledInTheCourseBodySchema,
-    createOrderSchema
+    createOrderSchema,
+    getCourseOrBatchEnrollmentRequest
 } from '../zod/courseEnrollment.schema';
 import quicker from '../util/quicker';
 import httpError from '../util/httpError';
@@ -179,9 +180,34 @@ export default {
         return httpResponse(req, res, 200, 'Transaction deleted successfully', {});
     }),
 
-    // getEnrolledCoursesByStudentId: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    //     const data = await courseEnrollmentService.getEnrolledCourses(req.user.id);
-    // }),
+    getEnrolledCoursesByStudentId: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = getCourseOrBatchEnrollmentRequest.safeParse({ studentId: req.user?.id });
+
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+
+        const data = await courseEnrollmentService.getEnrolledCourses(result.data.studentId);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, data);
+    }),
+    getStudentEnrolledBatches: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = getCourseOrBatchEnrollmentRequest.safeParse({ studentId: req.user?.id });
+
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const data = await courseEnrollmentService.getEnrolledBatches(result.data.studentId);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, data);
+    }),
+
+    getEnrolledBatchById: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const { id } = req.params;
+        if (!id) {
+            httpError(next, new Error('id not found'), req, 400);
+        }
+        const data = await courseEnrollmentService.getBatchEnrollmentById(id);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, data);
+    }),
 
     checkLoggedInUserEnrolledInTheCourse: catchAsync(async (req: RequestWithUser, res: Response, next: NextFunction) => {
         const validation = checkLoggedInUserEnrolledInTheCourseBodySchema.safeParse({
