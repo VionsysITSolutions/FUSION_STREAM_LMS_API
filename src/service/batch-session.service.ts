@@ -60,7 +60,7 @@ export default {
     updateBatchSessionRecording: async (callId: string, url: string) => {
         return prisma.batch_module_session.update({
             where: { meetLink: callId },
-            data: { recordingURL: url, meetLink: '' }
+            data: { recordingURL: url }
         });
     },
 
@@ -118,5 +118,11 @@ export default {
                 sessionDate: 'asc'
             }
         });
+    },
+
+    getSessionsByMeetingId: async (callId: string) => {
+        return prisma.batch_module_session.findFirst({
+            where: { meetLink: callId }
+        })
     }
 };
