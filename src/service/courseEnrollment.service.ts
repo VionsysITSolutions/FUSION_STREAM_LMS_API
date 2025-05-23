@@ -18,7 +18,8 @@ export default {
                 studentId: studentId
             },
             include: {
-                course: true
+                course: true,
+                transaction: true
             }
         });
 
