@@ -1,5 +1,6 @@
 import prisma from '../lib/db';
-import { ModuleProgressBody, SessionAttendanceBody, CourseProgressBody } from '../types/types';
+import redis from '../lib/redis';
+import { ModuleProgressBody, SessionAttendanceBody, CourseProgressBody, VideoProgressBody } from '../types/types';
 
 export default {
     // Module Progress
@@ -158,5 +159,20 @@ export default {
             sessionAttendance,
             courseProgress
         };
-    }
+    },
+
+    saveVideoProgress: async (data: VideoProgressBody) => {
+        const key = `video_progress_${data.userId}_${data.batchId}`;
+        await redis.hset(key, {
+            sessionId: data.sessionId,
+            time: data.time.toString(),
+        },);
+        await redis.expire(key, 60 * 60 * 24 * 15); // 15 days
+    },
+
+    getVideoProgress: async (userId: number, batchId: string) => {
+        const key = `video_progress_${userId}_${batchId}`;
+        return redis.hgetall(key);
+    },
+
 };
