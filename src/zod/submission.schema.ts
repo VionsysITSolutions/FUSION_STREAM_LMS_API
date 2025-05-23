@@ -81,3 +81,18 @@ export const getSubmissionsByStudentSchema = z.object({
         .int({ message: 'Student ID must be an integer' })
         .positive({ message: 'Student ID must be a positive integer' })
 });
+
+export const videoProgressSchema = z.object({
+    batchId: z.string({
+        required_error: 'Session ID is required',
+        invalid_type_error: 'Session ID must be a string'
+    }),
+    sessionId: z.string({
+        required_error: 'Session ID is required',
+        invalid_type_error: 'Session ID must be a string'
+    }),
+    time: z.number({
+        required_error: 'Time is required',
+        invalid_type_error: 'Time must be a number'
+    })
+});

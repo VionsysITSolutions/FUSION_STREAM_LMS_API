@@ -22,4 +22,8 @@ progressRouter.route('/course/:studentId/:batchId').get(authenticateUser(), prog
 // Overall Student Progress Route
 progressRouter.route('/student/:studentId').get(authenticateUser(), progressController.getStudentProgress);
 
+progressRouter.route('/video-progress').post(authenticateUser(), progressController.saveVideoProgress)
+
+progressRouter.route('/video-progress/:batchId').get(authenticateUser(), progressController.getVideoProgress);
+
 export default progressRouter;

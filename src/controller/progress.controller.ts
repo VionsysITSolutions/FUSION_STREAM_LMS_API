@@ -6,6 +6,7 @@ import httpError from '../util/httpError';
 import quicker from '../util/quicker';
 import responseMessage from '../constants/responseMessage';
 import progressService from '../service/progress.service';
+import { videoProgressSchema } from '../zod/submission.schema';
 
 export default {
     updateModuleProgress: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -76,5 +77,31 @@ export default {
 
         const progress = await progressService.getStudentProgress(Number(studentId));
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { progress });
+    }),
+
+    saveVideoProgress: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = videoProgressSchema.safeParse(req.body);
+        const studentId = req.user?.id as number;
+
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+
+        const { sessionId, time, batchId } = result.data;
+        await progressService.saveVideoProgress({ userId: studentId, batchId, sessionId, time });
+
+        return httpResponse(req, res, 200, responseMessage.SUCCESS);
+    }),
+
+    getVideoProgress: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const studentId = req.user?.id as number;
+        const { batchId } = req.params
+
+        if (!batchId) {
+            return httpError(next, new Error('batchID is required'), req, 400);
+        }
+
+        const progress = await progressService.getVideoProgress(studentId, batchId);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, progress);
     })
 };

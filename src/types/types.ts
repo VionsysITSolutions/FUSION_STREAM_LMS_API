@@ -138,3 +138,11 @@ export interface CourseProgressBody {
     progrssPercent: number;
     isCompleted: boolean;
 }
+
+export interface VideoProgressBody {
+    userId: number
+    sessionId: string;
+    time: number;
+    batchId: string
+}
+
