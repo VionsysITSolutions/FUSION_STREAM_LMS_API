@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import httpResponse from '../util/httpResponse';
 import catchAsync from '../util/catchAsync';
-import { signUpSchema, signInSchema, otpSchema, deleteByIdSchema } from '../zod/auth.schema';
+import { signUpSchema, signInSchema, otpSchema, deleteByIdSchema, updateUserSchema } from '../zod/auth.schema';
 import httpError from '../util/httpError';
 import userServices from '../service/user.service';
 import quicker from '../util/quicker';
@@ -10,6 +10,8 @@ import authServices from '../service/auth.service';
 import emailService from '../service/email.service';
 import * as jwt from 'jsonwebtoken';
 import config from '../config';
+import userService from '../service/user.service';
+// import userService from '../service/user.service';
 
 export default {
     signUpStart: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -58,13 +60,9 @@ export default {
             });
         }
 
-        const token = jwt.sign(
-            { userId: user?.id, role: user?.role, name: `${user?.firstName} ${user?.lastName}` },
-            config.JWT_SECRET as string,
-            {
-                expiresIn: '24h'
-            }
-        );
+        const token = jwt.sign({ userId: user?.id, role: user?.role, name: `${user?.firstName} ${user?.lastName}` }, config.JWT_SECRET as string, {
+            expiresIn: '24h'
+        });
         return httpResponse(req, res, 201, responseMessage.SUCCESS, { token });
     }),
 
@@ -126,5 +124,45 @@ export default {
         }
         await userServices.markAsDeleted(user.id);
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { message: 'User deleted successfully' });
+    }),
+    getLoggedInUserById: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        if (!req.user || typeof req.user.id === 'undefined') {
+            return httpError(next, new Error('User not authenticated'), req, 401);
+        }
+        const result = deleteByIdSchema.safeParse({ id: Number(req.user.id) });
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const savedUser = await userService.findById(result.data.id);
+        if (!savedUser) {
+            return httpError(next, new Error('User not found'), req, 404);
+        }
+
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { user: savedUser });
+    }),
+    updateUser: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = updateUserSchema.safeParse(req.body);
+
+        if (!result.success) {
+            return httpError(next, result.error, req, 400);
+        }
+
+        if (!req.user || typeof req.user.id === 'undefined') {
+            return httpError(next, new Error('User not authenticated'), req, 401);
+        }
+
+        const userId = Number(req.user.id);
+
+        const user = await userService.findById(userId);
+        if (!user) {
+            return httpError(next, new Error('User not found'), req, 404);
+        }
+
+        const updatedUser = await userService.updateUser({
+            id: userId,
+            data: result.data
+        });
+
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { user: updatedUser });
     })
 };

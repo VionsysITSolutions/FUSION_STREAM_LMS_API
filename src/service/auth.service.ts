@@ -1,4 +1,5 @@
 import application from '../constants/application';
+import prisma from '../lib/db';
 import redis from '../lib/redis';
 import quicker from '../util/quicker';
 export default {
@@ -14,5 +15,13 @@ export default {
         const storedOtp = await redis.get(key);
         const result = storedOtp && storedOtp === otp;
         return result;
+    },
+    findUserById: async (id: number) => {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        });
+        return user;
     }
 };

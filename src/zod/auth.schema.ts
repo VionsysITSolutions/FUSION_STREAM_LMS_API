@@ -28,7 +28,15 @@ export const signUpSchema = z.object({
 
     university: z.string().optional(),
 
-    stream: z.string().optional(),
+    parentNumber: z
+        .string({
+            required_error: 'Mobile number is required',
+            invalid_type_error: 'Mobile number must be a string'
+        })
+        .min(10, { message: 'Mobile number must be at least 10 digits' })
+        .regex(/^\+?[0-9\s]+$/, {
+            message: 'Please enter a valid mobile number'
+        }),
 
     mobileNumber: z
         .string({
