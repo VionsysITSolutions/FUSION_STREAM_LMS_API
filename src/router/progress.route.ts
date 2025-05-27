@@ -26,4 +26,6 @@ progressRouter.route('/video-progress').post(authenticateUser(), progressControl
 
 progressRouter.route('/video-progress/:batchId').get(authenticateUser(), progressController.getVideoProgress);
 
+progressRouter.route('/session-absense').post(progressController.sessionAbsense)
+
 export default progressRouter;

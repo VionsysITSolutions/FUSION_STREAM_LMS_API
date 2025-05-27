@@ -1,6 +1,9 @@
+import { PublishCommand } from '@aws-sdk/client-sns';
+import { sns } from '../lib/aws';
 import prisma from '../lib/db';
 import redis from '../lib/redis';
-import { ModuleProgressBody, SessionAttendanceBody, CourseProgressBody, VideoProgressBody } from '../types/types';
+import { ModuleProgressBody, SessionAttendanceBody, CourseProgressBody, VideoProgressBody, studnetAbsenseSMSPaylaod } from '../types/types';
+import quicker from '../util/quicker';
 
 export default {
     // Module Progress
@@ -175,4 +178,30 @@ export default {
         return redis.hgetall(key);
     },
 
+    sendParentStudentAbsenceSMS: async (payload: studnetAbsenseSMSPaylaod) => {
+        const { formattedDate, formattedTime } = quicker
+
+        const message = `
+Dear Parent/Guardian,
+
+Your child, ${payload.firstName}, was absent from the ${payload.sessionName} session of the ${payload.batchName} batch on ${formattedDate(payload.sessionTime)} at ${formattedTime(payload.sessionTime)}. Please contact us for more details.
+
+Best regards,
+Fusion Software Institute Team
+    `.trim();
+
+        const params = {
+            Message: message,
+            PhoneNumber: payload.parentsNumber,
+            MessageAttributes: {
+                'AWS.SNS.SMS.SenderID': {
+                    DataType: 'String',
+                    StringValue: 'Fusion_',
+                },
+            },
+        };
+        const command = new PublishCommand(params);
+        const result = await sns.send(command)
+        return result
+    }
 };

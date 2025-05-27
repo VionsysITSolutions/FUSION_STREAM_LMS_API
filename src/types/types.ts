@@ -146,3 +146,10 @@ export interface VideoProgressBody {
     batchId: string
 }
 
+export interface studnetAbsenseSMSPaylaod {
+    parentsNumber: string,
+    firstName: string,
+    batchName: string,
+    sessionName: string,
+    sessionTime: Date
+}

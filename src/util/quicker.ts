@@ -18,5 +18,19 @@ export default {
             user: config.SMTP_MAIL,
             pass: config.SMTP_PASSWORD
         }
+    }),
+
+    formattedDate: (time: Date) => new Date(time).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }),
+
+    formattedTime: (time: Date) => new Date(time).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
     })
+
 };
