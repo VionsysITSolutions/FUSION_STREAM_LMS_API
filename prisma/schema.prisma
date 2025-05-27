@@ -57,7 +57,7 @@ model User {
   bio          String?
   email        String   @unique
   university   String?
-  stream       String?
+  parentNumber String?
   mobileNumber String   
   gender       Gender
   isDeleted    Boolean  @default(false)
