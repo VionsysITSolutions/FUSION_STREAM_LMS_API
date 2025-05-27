@@ -40,11 +40,18 @@ export default {
             include: {
                 batchModules: {
                     include: {
-                        batchModuleSessions: true
+                        batchModuleSessions: {
+                            include: {
+                                sessionAttendance: true
+                            }
+                        }
                     }
                 },
-                batchEnrollments: true,
+                batchEnrollments: {
+                    include: { student: true }
+                },
                 instructors: true
+
             }
         });
     },

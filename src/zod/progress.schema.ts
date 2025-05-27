@@ -98,3 +98,18 @@ export const courseProgressSchema = z.object({
         invalid_type_error: 'isCompleted must be a boolean'
     })
 });
+
+export const sessionAbsesenseSchema = z.object({
+    batchId: z
+        .string({
+            required_error: 'Batch ID is required',
+            invalid_type_error: 'Batch ID must be a string'
+        })
+        .min(1, { message: 'Batch ID must not be empty' }),
+    sessionId: z
+        .string({
+            required_error: 'Batch ID is required',
+            invalid_type_error: 'Batch ID must be a string'
+        })
+        .min(1, { message: 'Batch ID must not be empty' }),
+})
