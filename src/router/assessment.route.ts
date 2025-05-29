@@ -6,7 +6,9 @@ const assessmentRouter = Router();
 
 // Assessment Routes
 assessmentRouter.route('/').post(authenticateUser('instructor', 'admin'), assessmentController.createAssessment);
+assessmentRouter.route('/:id').put(authenticateUser('instructor', 'admin'), assessmentController.updateAssessment);
 
+// get by module id or batch id
 assessmentRouter.route('/:type/:id').get(assessmentController.getAssessmentById);
 
 // Question Routes

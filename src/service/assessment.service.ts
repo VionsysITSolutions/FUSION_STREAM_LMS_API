@@ -20,19 +20,73 @@ export default {
             }
         });
     },
+    updateModuleAssessment: async (id: string, assessmentData: Partial<CreateAssessmentBody>) => {
+        return prisma.module_assessment.update({
+            where: {
+                id
+            },
+            data: {
+                title: assessmentData.title,
+                totalMarks: assessmentData.totalMarks,
+                batchModuleId: assessmentData.batchModuleId
+            },
+            include: {
+                batchModule: true,
+                questions: {
+                    include: {
+                        questionOptions: true
+                    }
+                }
+            }
+        });
+    },
 
     // Final Assessment Methods
     createFinalAssessment: async (assessmentData: CreateAssessmentBody) => {
+        const existingAssessment = await prisma.final_assessment.findFirst({
+            where: { batchId: assessmentData.batchId! }
+        });
+        if (existingAssessment) {
+            throw new Error('Final assessment for this batch already exists');
+        }
         return prisma.final_assessment.create({
             data: {
                 title: assessmentData.title,
                 totalMarks: assessmentData.totalMarks,
-                batchId: assessmentData.batchId!,
-                courseId: assessmentData.courseId!
+                batchId: assessmentData.batchId!
             },
             include: {
                 batch: true,
-                course: true,
+
+                questions: {
+                    include: {
+                        questionOptions: true
+                    }
+                }
+            }
+        });
+    },
+    updateFinalAssessment: async (assessmentId: string, assessmentData: CreateAssessmentBody) => {
+        const existingAssessment = await prisma.final_assessment.findUnique({
+            where: { id: assessmentId }
+        });
+
+        if (!existingAssessment) {
+            throw new Error('Final assessment not found');
+        }
+
+        // Optional: Enforce uniqueness check if needed during update
+        // But typically uniqueness is enforced during creation, not update
+
+        return prisma.final_assessment.update({
+            where: { id: assessmentId },
+            data: {
+                title: assessmentData.title,
+                totalMarks: assessmentData.totalMarks,
+                batchId: assessmentData.batchId!
+            },
+            include: {
+                batch: true,
                 questions: {
                     include: {
                         questionOptions: true
@@ -43,8 +97,8 @@ export default {
     },
 
     getModuleAssessmentById: async (id: string) => {
-        return prisma.module_assessment.findUnique({
-            where: { id },
+        return prisma.module_assessment.findMany({
+            where: { batchModuleId: id },
             include: {
                 batchModule: true,
                 questions: {
@@ -68,11 +122,11 @@ export default {
     },
 
     getFinalAssessmentById: async (id: string) => {
-        return prisma.final_assessment.findUnique({
-            where: { id },
+        return prisma.final_assessment.findFirst({
+            where: { batchId: id },
             include: {
                 batch: true,
-                course: true,
+
                 questions: {
                     include: {
                         questionOptions: true
@@ -157,10 +211,13 @@ export default {
     },
 
     deleteQuestion: async (id: string) => {
-        // Delete options first due to foreign key constraints
-        await prisma.options.deleteMany({
-            where: { questionId: id }
+        const existingQuestion = await prisma.questions.findFirst({
+            where: { id }
         });
+
+        if (!existingQuestion) {
+            throw new Error('Question not found');
+        }
 
         return prisma.questions.delete({
             where: { id }

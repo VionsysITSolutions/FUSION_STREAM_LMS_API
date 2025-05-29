@@ -40,6 +40,35 @@ export default {
 
         return httpResponse(req, res, 201, responseMessage.SUCCESS, { assessment });
     }),
+    updateAssessment: catchAsync(async (req: AssessmentRequest, res: Response, next: NextFunction) => {
+        const result = createAssessmentSchema.safeParse(req.body);
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+
+        const { id } = req.params;
+        if (!id) {
+            return httpError(next, new Error('Assessment ID is required'), req, 400);
+        }
+
+        let updatedAssessment;
+
+        if (result.data.assessmentType === 'module') {
+            if (!result.data.batchModuleId) {
+                return httpError(next, new Error('Batch module ID is required for module assessment'), req, 400);
+            }
+
+            updatedAssessment = await assessmentService.updateModuleAssessment(id, result.data);
+        } else {
+            if (!result.data.batchId || !result.data.courseId) {
+                return httpError(next, new Error('Batch ID and Course ID are required for final assessment'), req, 400);
+            }
+
+            updatedAssessment = await assessmentService.updateFinalAssessment(id, result.data);
+        }
+
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { assessment: updatedAssessment });
+    }),
 
     getAssessmentById: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { id, type } = req.params;
