@@ -96,7 +96,7 @@ export default {
 
     getVideoProgress: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const studentId = req.user?.id as number;
-        const { batchId } = req.params
+        const { batchId } = req.params;
 
         if (!batchId) {
             return httpError(next, new Error('batchID is required'), req, 400);
@@ -107,20 +107,20 @@ export default {
     }),
 
     sessionAbsense: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-        const result = sessionAbsesenseSchema.safeParse(req.body)
+        const result = sessionAbsesenseSchema.safeParse(req.body);
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }
         const { batchId, sessionId } = result.data;
 
-        const batch = await batchService.getBatchById(batchId)
+        const batch = await batchService.getBatchById(batchId);
         if (!batch) {
             return httpError(next, new Error('Batch not found'), req, 404);
         }
 
         let targetSession = null;
         for (const module of batch.batchModules) {
-            targetSession = module?.batchModuleSessions?.find(session => session.id === sessionId);
+            targetSession = module?.batchModuleSessions?.find((session) => session.id === sessionId);
             if (targetSession) break;
         }
         if (!targetSession) {
@@ -128,19 +128,17 @@ export default {
         }
 
         const enrolledStudents = batch?.batchEnrollments;
-        const attendedStudentIds = targetSession?.sessionAttendance?.map(attendance => attendance?.studentId);
-        const absentStudents = enrolledStudents?.filter(
-            enrollment => !attendedStudentIds?.includes(enrollment?.studentId)
-        );
+        const attendedStudentIds = targetSession?.sessionAttendance?.map((attendance) => attendance?.studentId);
+        const absentStudents = enrolledStudents?.filter((enrollment) => !attendedStudentIds?.includes(enrollment?.studentId));
 
         const smsResult = await Promise.all(
-            absentStudents?.map(student =>
+            absentStudents?.map((student) =>
                 progressService.sendParentStudentAbsenceSMS({
                     firstName: student.student.firstName,
-                    parentsNumber: '+917498012116',
+                    parentsNumber: student.student.parentNumber,
                     batchName: batch.name,
                     sessionName: targetSession.topicName,
-                    sessionTime: new Date(targetSession.sessionDate),
+                    sessionTime: new Date(targetSession.sessionDate)
                 })
             )
         );

@@ -57,7 +57,7 @@ model User {
   bio          String?
   email        String   @unique
   university   String?
-  parentNumber String?
+  parentNumber String
   mobileNumber String   
   gender       Gender
   isDeleted    Boolean  @default(false)
@@ -103,7 +103,6 @@ model Course {
   batches       batch[]         @relation("Batches")
   enrollments   courseEnrollment[] @relation("CourseEnrollments")
   transactions  transaction[]  @relation("CourseTransaction")
-  finalAssessments final_assessment[] @relation("CourseFinalAssessment")
 }
 
 model courseEnrollment{
@@ -268,7 +267,7 @@ model coupon{
 model module_assessment {
   id        String   @id @default(cuid())
   title     String
-  totalMarks Decimal
+  totalMarks Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   batchModuleId String
@@ -282,14 +281,12 @@ model module_assessment {
 model final_assessment {
   id         String   @id @default(cuid())
   title      String
-  totalMarks Decimal
+  totalMarks Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   batchId    String
   batch      batch    @relation("BatchFinalAssessment", fields: [batchId], references: [id],onDelete: Cascade)
-  courseId   String
-  course     Course   @relation("CourseFinalAssessment", fields: [courseId], references: [id],onDelete: Cascade)
-
+  
   // Relationships
   questions   questions[] @relation("QuestionsOnFinalAssessment")
   submissions assessment_submission[] @relation("SubmissionsOnFinalAssessment")
@@ -299,7 +296,7 @@ model questions {
   id               String           @id @default(cuid())
   assessmentType   assessmentType
   questionText     String
-  marks            Decimal
+  marks            Int
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
