@@ -28,8 +28,17 @@ export default {
                         createdBy: true
                     }
                 },
-                batchModules: true,
-                batchEnrollments: true
+                batchModules: {
+                    include: {
+                        batchModuleSessions: true
+                    }
+                },
+                batchEnrollments: {
+                    include: {
+                        student: true
+                    }
+                }
+
             }
         });
     },
