@@ -4,6 +4,8 @@ import httpResponse from '../util/httpResponse';
 import responseMessage from '../constants/responseMessage';
 import batchSessionService from '../service/batch-session.service';
 import progressService from '../service/progress.service';
+import batchService from '../service/batch.service';
+import webhookService from '../service/webhook.service';
 
 interface WebhookPayload {
     type: string;
@@ -54,33 +56,31 @@ export default {
 
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { data: 'Webhook processed successfully' });
     }),
+
+    // TODO --  add this api route to https://cron-job.org/
+    sessionReminder: catchAsync(async (req, res) => {
+        const allBatches = await batchService.getAllBatches();
+        const now = new Date();
+        const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour
+        oneHourFromNow.setSeconds(0, 0);
+
+        for (const batch of allBatches) {
+            const enrolledStudents = batch.batchEnrollments || [];
+            if (enrolledStudents.length === 0) continue;
+
+            for (const module of batch.batchModules || []) {
+                for (const session of module.batchModuleSessions || []) {
+                    const sessionDate = new Date(session.sessionDate);
+
+                    const timeDiff = Math.abs(sessionDate.getTime() - oneHourFromNow.getTime());
+                    if (timeDiff <= 60 * 1000) {
+                        for (const enrollment of enrolledStudents) {
+                            await webhookService.sendSessionReminderSMS({ student: enrollment.student, session, batch });
+                        }
+                    }
+                }
+            }
+        }
+        return httpResponse(req, res, 200, 'Session reminders processed', allBatches);
+    })
 };
-
-
-
-// {
-//     "type": "call.session_participant_joined",
-//     "created_at": "2025-05-19T10:32:05.653992466Z",
-//     "call_cid": "default:5ecdcf1a-3ab8-4fe2-8e8b-0711b282c515",
-//     "session_id": "5aad12a5-9734-40f5-ba9d-7f18a5257cee",
-//     "participant": {
-//       "user": {
-//         "id": "2",
-//         "name": "Ravikant Waghmare",
-//         "image": "",
-//         "language": "",
-//         "role": "user",
-//         "teams": [],
-//         "created_at": "2025-05-19T07:35:23.14629Z",
-//         "updated_at": "2025-05-19T08:40:10.166245Z",
-//         "banned": false,
-//         "online": true,
-//         "blocked_user_ids": [],
-//         "shadow_banned": false,
-//         "invisible": false
-//       },
-//       "user_session_id": "6d2d4b93-cb2e-494e-8bdb-460d351cc806",
-//       "role": "user",
-//       "joined_at": "2025-05-19T10:32:05.653976712Z"
-//     }
-//   }
