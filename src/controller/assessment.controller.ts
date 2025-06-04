@@ -1,7 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import httpResponse from '../util/httpResponse';
 import catchAsync from '../util/catchAsync';
-import { createAssessmentSchema, createQuestionSchema, updateQuestionSchema, getQuestionByIdSchema } from '../zod/assessment.schema';
+import {
+    createAssessmentSchema,
+    createQuestionSchema,
+    updateQuestionSchema,
+    getQuestionByIdSchema,
+    saveAssessmentStatusSchema
+} from '../zod/assessment.schema';
 import httpError from '../util/httpError';
 import quicker from '../util/quicker';
 import responseMessage from '../constants/responseMessage';
@@ -129,5 +135,37 @@ export default {
 
         const questions = await assessmentService.getQuestionsByAssessment(assessmentId, type as 'module' | 'final');
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { questions });
+    }),
+
+    saveAssessmentStatus: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = saveAssessmentStatusSchema.safeParse(req.body);
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const { assessmentId, answers, currentIndex } = result.data;
+        const userId = req.user?.id;
+        if (typeof userId !== 'number') {
+            return httpError(next, new Error('User ID is required'), req, 400);
+        }
+        await assessmentService.saveAssessmentStatusToRedis(assessmentId, userId, answers, currentIndex);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { message: 'Assessment status saved successfully' });
+    }),
+
+    getAssessmentStatus: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const { assessmentId } = req.params;
+        if (!assessmentId) {
+            return httpError(next, new Error('Assessment ID is required'), req, 400);
+        }
+        const userId = req.user?.id;
+        if (typeof userId !== 'number') {
+            return httpError(next, new Error('User ID is required'), req, 400);
+        }
+        console.log(assessmentId, userId);
+        const status = await assessmentService.getAssessmentStatusFromRedis(assessmentId, userId);
+
+        if (!status) {
+            return httpError(next, new Error('No assessment status found'), req, 404);
+        }
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { status: status });
     })
 };

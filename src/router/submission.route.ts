@@ -12,6 +12,10 @@ submissionRouter
     .route('/assessment/:type/:assessmentId')
     .get(authenticateUser('instructor', 'admin'), submissionController.getSubmissionsByAssessment);
 
+submissionRouter
+    .route('/assessment/student/:type/:assessmentId')
+    .get(authenticateUser('student'), submissionController.getSubmissionsByAssessmentAndStudent);
+
 submissionRouter.route('/student/:studentId').get(authenticateUser(), submissionController.getSubmissionsByStudent);
 
 export default submissionRouter;

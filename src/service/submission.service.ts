@@ -1,4 +1,5 @@
 import prisma from '../lib/db';
+import redis from '../lib/redis';
 import { CreateSubmissionBody } from '../types/types';
 
 export default {
@@ -79,6 +80,18 @@ export default {
         });
     },
 
+    getSubmissionsByAssessmentAndStudent: async (assessmentId: string, assessmentType: 'module' | 'final', studentId: number) => {
+        return prisma.assessment_submission.findFirst({
+            where: {
+                studentId,
+                [assessmentType === 'module' ? 'moduleAssessmentId' : 'finalAssessmentId']: assessmentId
+            },
+            include: {
+                student: true
+            }
+        });
+    },
+
     getSubmissionsByStudent: async (studentId: number) => {
         return prisma.assessment_submission.findMany({
             where: { studentId },
@@ -93,5 +106,9 @@ export default {
                 }
             }
         });
+    },
+
+    deleteAssessmentSubmissionFromRedis: async (studentId: string, assessmentId: string) => {
+        await redis.del(`quiz_${studentId}_${assessmentId}`);
     }
 };

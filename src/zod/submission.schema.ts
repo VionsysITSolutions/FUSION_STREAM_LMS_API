@@ -72,6 +72,28 @@ export const getSubmissionsByAssessmentSchema = z.object({
     })
 });
 
+export const getSubmissionsByAssessmentAndStudentSchema = z.object({
+    assessmentId: z
+        .string({
+            required_error: 'Assessment ID is required',
+            invalid_type_error: 'Assessment ID must be a string'
+        })
+        .min(1, { message: 'Assessment ID must not be empty' }),
+
+    assessmentType: z.enum(['module', 'final'], {
+        required_error: 'Assessment type is required',
+        invalid_type_error: 'Assessment type must be either "module" or "final"'
+    }),
+
+    studentId: z
+        .number({
+            required_error: 'Student ID is required',
+            invalid_type_error: 'Student ID must be a number'
+        })
+        .int({ message: 'Student ID must be an integer' })
+        .positive({ message: 'Student ID must be a positive integer' })
+});
+
 export const getSubmissionsByStudentSchema = z.object({
     studentId: z
         .number({

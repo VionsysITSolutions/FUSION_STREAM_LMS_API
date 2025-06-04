@@ -1,4 +1,5 @@
 import prisma from '../lib/db';
+import redis from '../lib/redis';
 import { CreateAssessmentBody, QuestionBody } from '../types/types';
 
 export default {
@@ -231,5 +232,20 @@ export default {
                 questionOptions: true
             }
         });
+    },
+
+    saveAssessmentStatusToRedis: async (assessmentId: string, userId: number, answers: Record<string, string>, currentIndex: number) => {
+        const key = `quiz_${userId}_${assessmentId}`;
+        const data = { answers, currentIndex };
+        await redis.set(key, JSON.stringify(data), 'EX', 60 * 60 * 24);
+        return data;
+    },
+    getAssessmentStatusFromRedis: async (
+        assessmentId: string,
+        userId: number
+    ): Promise<{ answers: Record<string, string>; currentIndex: number } | null> => {
+        const key = `quiz_${userId}_${assessmentId}`;
+        const status = await redis.get(key);
+        return status ? (JSON.parse(status) as { answers: Record<string, string>; currentIndex: number }) : null;
     }
 };
