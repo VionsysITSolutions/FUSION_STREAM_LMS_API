@@ -90,6 +90,25 @@ export const deleteByIdSchema = z.object({
         .positive({ message: 'Id must be a positive number' })
 });
 
+export const UserSchema = z.object({
+    firstName: z
+        .string()
+        .min(2, { message: 'Name must be at least 2 characters' }),
+    lastName: z
+        .string()
+        .min(2, { message: 'Surname must be at least 2 characters' }),
+    email: z.string().email({ message: 'Please enter a valid email address' }),
+    role: z.enum(['instructor', 'admin']),
+    gender: z.enum(['M', 'F', 'O'], {
+        required_error: 'Please select your gender',
+    }),
+    mobileNumber: z
+        .string()
+        .min(10, { message: 'Phone number must be at least 10 digits' })
+        .regex(/^\+?[0-9\s]+$/, { message: 'Please enter a valid phone number' }),
+
+});
+
 export const updateUserSchema = signUpSchema.partial();
 export type UpdateBody = z.infer<typeof updateUserSchema>;
 export type SignUpBody = z.infer<typeof signUpSchema>;

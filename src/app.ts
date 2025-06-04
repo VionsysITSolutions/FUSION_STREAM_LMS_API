@@ -4,7 +4,6 @@ import responseMessage from './constants/responseMessage';
 import httpError from './util/httpError';
 import apiRouter from './router/api.route';
 import authRouter from './router/auth.route';
-import config from './config';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -32,7 +31,7 @@ app.use(cookieParser());
 app.use(
     cors({
         methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'PUT'],
-        origin: config.FRONTEND_URL,
+        origin: 'http://localhost:3000',
         credentials: true
     })
 );

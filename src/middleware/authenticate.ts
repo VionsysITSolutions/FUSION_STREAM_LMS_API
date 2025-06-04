@@ -27,6 +27,10 @@ const authenticateUser = (...allowedRoles: string[]) =>
 
         const decoded = jwt.verify(token, config.JWT_SECRET as string) as JwtPayload;
 
+        if (!decoded) {
+            return httpError(next, new Error('token is invalid or expired'), req, 403);
+        }
+
         const user = await userServices.findById(decoded.userId);
         if (!user || user.isDeleted) {
             return httpError(next, new Error('User not found or deleted'), req, 401);
@@ -34,7 +38,7 @@ const authenticateUser = (...allowedRoles: string[]) =>
 
         // Role check
         if (allowedRoles.length && !allowedRoles.includes(user.role)) {
-            return httpError(next, new Error('Access denied'), req, 403);
+            return httpError(next, new Error('Access denied, Unauthorized user'), req, 403);
         }
 
         req.user = {
