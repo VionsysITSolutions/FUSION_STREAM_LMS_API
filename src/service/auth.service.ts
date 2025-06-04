@@ -23,5 +23,9 @@ export default {
             }
         });
         return user;
+    },
+
+    getAllUsers: async () => {
+        return await prisma.user.findMany()
     }
 };
