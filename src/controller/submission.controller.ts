@@ -1,7 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import httpResponse from '../util/httpResponse';
 import catchAsync from '../util/catchAsync';
-import { createSubmissionSchema, getSubmissionByIdSchema, getSubmissionsByAssessmentSchema } from '../zod/submission.schema';
+import {
+    createSubmissionSchema,
+    getSubmissionByIdSchema,
+    getSubmissionsByAssessmentAndStudentSchema,
+    getSubmissionsByAssessmentSchema
+} from '../zod/submission.schema';
 import httpError from '../util/httpError';
 import quicker from '../util/quicker';
 import responseMessage from '../constants/responseMessage';
@@ -37,6 +42,17 @@ export default {
         }
 
         const submission = await submissionService.createSubmission(result.data);
+        if (!submission) {
+            return httpError(next, new Error('Failed to create submission'), req, 500);
+        }
+
+        const assessmentId = result.data.moduleAssessmentId ?? result.data.finalAssessmentId;
+
+        if (!assessmentId) {
+            return httpError(next, new Error('Assessment ID is required'), req, 400);
+        }
+
+        await submissionService.deleteAssessmentSubmissionFromRedis(String(result.data.studentId), assessmentId);
         return httpResponse(req, res, 201, responseMessage.SUCCESS, { submission });
     }),
 
@@ -81,6 +97,23 @@ export default {
         }
 
         const submissions = await submissionService.getSubmissionsByStudent(studentId);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { submissions });
+    }),
+
+    getSubmissionsByAssessmentAndStudent: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const result = getSubmissionsByAssessmentAndStudentSchema.safeParse({
+            assessmentId: req.params.assessmentId,
+            assessmentType: req.params.type,
+            studentId: Number(req.user?.id)
+        });
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const submissions = await submissionService.getSubmissionsByAssessmentAndStudent(
+            result.data.assessmentId,
+            result.data.assessmentType,
+            result.data.studentId
+        );
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { submissions });
     })
 };

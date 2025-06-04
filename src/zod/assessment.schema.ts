@@ -111,3 +111,24 @@ export const getQuestionByIdSchema = z.object({
         })
         .min(1, { message: 'Question ID must not be empty' })
 });
+
+export const saveAssessmentStatusSchema = z.object({
+    assessmentId: z
+        .string({
+            required_error: 'Assessment ID is required',
+            invalid_type_error: 'Assessment ID must be a string'
+        })
+        .min(1, { message: 'Assessment ID must not be empty' }),
+
+    answers: z.record(
+        z.string(), // questionId
+        z.string() // selected optionId
+    ),
+
+    currentIndex: z
+        .number({
+            required_error: 'Current index is required',
+            invalid_type_error: 'Current index must be a number'
+        })
+        .min(0, { message: 'Index cannot be negative' })
+});
