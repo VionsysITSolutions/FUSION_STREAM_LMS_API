@@ -155,5 +155,14 @@ export default {
             }
         });
         return deletedTransaction;
+    },
+    getAllTransactions: async () => {
+        const transactions = await prisma.transaction.findMany({
+            include: {
+                user: true,
+                course: true
+            }
+        });
+        return transactions;
     }
 };

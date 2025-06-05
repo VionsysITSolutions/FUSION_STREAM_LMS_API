@@ -220,5 +220,10 @@ export default {
 
         const isEnrolled = await courseEnrollmentService.checkStudentEnrolledInTheCourse(validation.data.studentId, validation.data.courseId);
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { isEnrolled });
+    }),
+
+    getAllTransactions: catchAsync(async (req: Request, res: Response) => {
+        const transactions = await courseEnrollmentService.getAllTransactions();
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, transactions);
     })
 };

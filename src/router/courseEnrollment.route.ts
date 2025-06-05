@@ -11,4 +11,5 @@ courseEnrollmentRouter.route('/check-enrolled/:courseId').get(authenticateUser()
 courseEnrollmentRouter.route('/').get(authenticateUser('student'), courseEnrollmentController.getEnrolledCoursesByStudentId);
 courseEnrollmentRouter.route('/batches').get(authenticateUser(), courseEnrollmentController.getStudentEnrolledBatches);
 courseEnrollmentRouter.route('/batches/:id').get(authenticateUser('student'), courseEnrollmentController.getEnrolledBatchById);
+courseEnrollmentRouter.route('/transactions').get(courseEnrollmentController.getAllTransactions);
 export default courseEnrollmentRouter;
