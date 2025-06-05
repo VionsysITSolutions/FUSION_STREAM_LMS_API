@@ -87,7 +87,17 @@ export default {
                 [assessmentType === 'module' ? 'moduleAssessmentId' : 'finalAssessmentId']: assessmentId
             },
             include: {
-                student: true
+                student: true,
+                answers: {
+                    include: {
+                        question: {
+                            include: {
+                                questionOptions: true
+                            }
+                        },
+                        selectedOption: true
+                    }
+                }
             }
         });
     },

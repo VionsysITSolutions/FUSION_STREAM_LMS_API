@@ -104,7 +104,12 @@ export default {
                 batchModule: true,
                 questions: {
                     include: {
-                        questionOptions: true
+                        questionOptions: {
+                            select: {
+                                id: true,
+                                optionText: true
+                            }
+                        }
                     }
                 },
                 submissions: {
