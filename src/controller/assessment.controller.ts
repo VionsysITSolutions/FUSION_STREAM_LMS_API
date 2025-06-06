@@ -38,8 +38,8 @@ export default {
             }
             assessment = await assessmentService.createModuleAssessment(result.data);
         } else {
-            if (!result.data.batchId || !result.data.courseId) {
-                return httpError(next, new Error('Batch ID and Course ID are required for final assessment'), req, 400);
+            if (!result.data.batchId) {
+                return httpError(next, new Error('Batch ID are required for final assessment'), req, 400);
             }
             assessment = await assessmentService.createFinalAssessment(result.data);
         }
@@ -66,8 +66,8 @@ export default {
 
             updatedAssessment = await assessmentService.updateModuleAssessment(id, result.data);
         } else {
-            if (!result.data.batchId || !result.data.courseId) {
-                return httpError(next, new Error('Batch ID and Course ID are required for final assessment'), req, 400);
+            if (!result.data.batchId) {
+                return httpError(next, new Error('Batch ID are required for final assessment'), req, 400);
             }
 
             updatedAssessment = await assessmentService.updateFinalAssessment(id, result.data);
@@ -160,7 +160,7 @@ export default {
         if (typeof userId !== 'number') {
             return httpError(next, new Error('User ID is required'), req, 400);
         }
-        console.log(assessmentId, userId);
+
         const status = await assessmentService.getAssessmentStatusFromRedis(assessmentId, userId);
 
         if (!status) {

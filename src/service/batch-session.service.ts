@@ -103,7 +103,7 @@ export default {
         return prisma.batch_module_session.findMany({
             where: {
                 sessionDate: {
-                    gte: now
+                    gt: now
                 }
             },
             include: {
@@ -115,7 +115,7 @@ export default {
                 }
             },
             orderBy: {
-                sessionDate: 'asc'
+                sessionDate: 'desc'
             }
         });
     },
@@ -123,6 +123,6 @@ export default {
     getSessionsByMeetingId: async (callId: string) => {
         return prisma.batch_module_session.findFirst({
             where: { meetLink: callId }
-        })
+        });
     }
 };

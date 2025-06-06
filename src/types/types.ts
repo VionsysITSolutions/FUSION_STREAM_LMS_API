@@ -88,7 +88,6 @@ export interface CreateAssessmentBody {
     totalMarks: number;
     batchModuleId?: string;
     batchId?: string;
-    courseId?: string;
     assessmentType: 'module' | 'final';
 }
 
@@ -140,16 +139,16 @@ export interface CourseProgressBody {
 }
 
 export interface VideoProgressBody {
-    userId: number
+    userId: number;
     sessionId: string;
     time: number;
-    batchId: string
+    batchId: string;
 }
 
 export interface studnetAbsenseSMSPaylaod {
-    parentsNumber: string,
-    firstName: string,
-    batchName: string,
-    sessionName: string,
-    sessionTime: Date
+    parentsNumber: string;
+    firstName: string;
+    batchName: string;
+    sessionName: string;
+    sessionTime: Date;
 }

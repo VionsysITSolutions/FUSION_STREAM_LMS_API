@@ -37,6 +37,7 @@ export default {
         }
 
         const attendance = await progressService.markSessionAttendance(result.data);
+        // create progress service
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { attendance });
     }),
 

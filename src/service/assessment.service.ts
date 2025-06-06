@@ -156,7 +156,7 @@ export default {
     // Question Methods
     createQuestion: async (questionData: QuestionBody) => {
         const { options, ...questionFields } = questionData;
-
+        console.log(questionData);
         return prisma.questions.create({
             data: {
                 ...questionFields,
