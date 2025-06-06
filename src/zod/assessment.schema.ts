@@ -30,12 +30,6 @@ export const createAssessmentSchema = z.object({
         .string({
             invalid_type_error: 'Batch ID must be a string'
         })
-        .optional(),
-
-    courseId: z
-        .string({
-            invalid_type_error: 'Course ID must be a string'
-        })
         .optional()
 });
 
