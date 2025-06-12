@@ -80,6 +80,7 @@ model User {
   studentSessionAttendance session_attendance[] @relation("StudentSessionAttendance")
   studentCourseProgress course_progress[] @relation("StudentCourseProgress")
   instructorBatches batch[] @relation("BatchInstructors")
+  userCertificates certificate[] @relation("userCertificates")
 }
 
 model Course {
@@ -163,6 +164,7 @@ model batch {
    instructors User[] @relation("BatchInstructors")
   batchFinalAssessments final_assessment[] @relation("BatchFinalAssessment")
   courseProgress course_progress[] @relation("CourseProgress")
+  certificates certificate[] @relation("certificates")
 }
 
 model batch_module {
@@ -386,5 +388,19 @@ model course_progress{
   student   User     @relation("StudentCourseProgress", fields: [studentId], references: [id])
   progrssPercent Float
   isCompleted Boolean @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model certificate {
+  id        String   @id @default(cuid())
+  url       String?
+  certificateNumber String? @unique()
+  studentId Int
+  student   User     @relation("userCertificates", fields: [studentId], references: [id])
+
+  batchId String
+  batch   batch    @relation("certificates", fields: [batchId], references: [id])
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

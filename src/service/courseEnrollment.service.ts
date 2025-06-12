@@ -50,6 +50,7 @@ export default {
             include: {
                 batch: {
                     include: {
+                        certificates: true,
                         batchModules: {
                             include: {
                                 batchModuleSessions: true
