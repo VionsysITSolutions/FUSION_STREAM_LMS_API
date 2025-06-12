@@ -152,3 +152,9 @@ export interface studnetAbsenseSMSPaylaod {
     sessionName: string;
     sessionTime: Date;
 }
+
+export interface saveCertificateBody {
+    url?: string;
+    studentId: number;
+    batchId: string
+}

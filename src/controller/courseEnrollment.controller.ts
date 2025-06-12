@@ -15,6 +15,7 @@ import courseEnrollmentService from '../service/courseEnrollment.service';
 import httpResponse from '../util/httpResponse';
 import responseMessage from '../constants/responseMessage';
 import crypto from 'crypto';
+import certificateService from '../service/certificate.service';
 
 interface RequestWithUser extends Request {
     user?: {
@@ -135,9 +136,17 @@ export default {
                 batchId: batchValidation.data.batchId
             });
 
+
             if (!batchEnrollment) {
                 return httpError(next, new Error('Batch enrollment failed'), req, 500);
             }
+
+            const alreadyExistCertificate = await certificateService.getCertificateByStudentAndId(updatedTransaction.userId, batchValidation.data.batchId)
+
+            if (!alreadyExistCertificate) {
+                return httpError(next, new Error('Mock Certificate generation failed'), req, 500);
+            }
+
             return httpResponse(req, res, 200, 'Transaction updated successfully', {
                 transactionId: updatedTransaction.id
             });
