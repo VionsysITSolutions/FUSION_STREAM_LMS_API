@@ -399,7 +399,7 @@ model certificate {
   student   User     @relation("userCertificates", fields: [studentId], references: [id])
 
   batchId String
-  batch   batch    @relation("certificates", fields: [batchId], references: [id])
+  batch   batch    @relation("certificates", fields: [batchId], references: [id],onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
