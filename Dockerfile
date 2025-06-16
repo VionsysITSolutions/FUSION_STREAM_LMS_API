@@ -14,4 +14,4 @@ COPY --from=base /app/prisma ./prisma/
 RUN npm ci --only=production
 RUN npx prisma generate
 EXPOSE 8080
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/server.js"]
