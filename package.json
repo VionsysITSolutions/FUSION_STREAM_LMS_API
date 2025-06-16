@@ -11,7 +11,9 @@
         "lint:fix": "eslint --fix",
         "format:check": "prettier . --check",
         "format:fix": "prettier . --fix",
-        "prepare": "husky"
+        "prepare": "husky",
+        "preinstall": "npx prisma generate",
+        "postinstall": "npx prisma generate"
     },
     "keywords": [],
     "author": "",
