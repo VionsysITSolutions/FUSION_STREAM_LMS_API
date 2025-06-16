@@ -1,0 +1,406 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  M
+  F
+  O
+}
+
+enum Role {
+  student
+  instructor
+  admin
+  superAdmin
+}
+
+enum batchTimeSlot {
+  morning
+  afternoon
+  evening
+}
+
+enum paymentStatus {
+  pending
+  completed
+  failed
+}
+
+
+enum assessmentType {
+  module
+  final
+}
+
+enum attendanceType {
+  live
+  recorded
+}
+
+enum mediaType {
+  video
+  pdf
+  externalLink
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  firstName    String
+  middleName   String?
+  lastName     String
+  bio          String?
+  email        String   @unique
+  university   String?
+  parentNumber String
+  mobileNumber String   
+  gender       Gender
+  isDeleted    Boolean  @default(false)
+  address      String?
+  role         Role     @default(student)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  createdCourses  Course[]       @relation("CreatedCourses")
+  approvedCourses Course[]       @relation("ApprovedCourses")
+  batchInstructor batch_module[] @relation("BatchModuleInstructor")
+  studentCourseEnrollments courseEnrollment[] @relation("StudentEnrollments")
+  studentBatchEnrollments batchEnrollment[] @relation("StudentBatchEnrollments")
+  senderMessages chat_message[] @relation("Sender")
+  userTransactions transaction[] @relation("UserTransaction")
+  createdCoupons coupon[]       @relation("CreatedCoupons")
+  studentAssessmentSubmission assessment_submission[] @relation("StudentAssessmentSubmission")
+  studentModuleProgress module_progress[] @relation("StudentModuleProgress")
+  studentSessionAttendance session_attendance[] @relation("StudentSessionAttendance")
+  studentCourseProgress course_progress[] @relation("StudentCourseProgress")
+  instructorBatches batch[] @relation("BatchInstructors")
+  userCertificates certificate[] @relation("userCertificates")
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  thumbnailUrl String
+  price        Decimal
+  category     String?
+  isApproved   Boolean  @default(false)
+  isDeleted    Boolean  @default(false)
+  createdById  Int
+  approvedById Int?
+  createdBy    User     @relation("CreatedCourses", fields: [createdById], references: [id])
+  approvedBy   User?    @relation("ApprovedCourses", fields: [approvedById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  courseModules course_module[] @relation("CourseModules")
+  batches       batch[]         @relation("Batches")
+  enrollments   courseEnrollment[] @relation("CourseEnrollments")
+  transactions  transaction[]  @relation("CourseTransaction")
+}
+
+model courseEnrollment{
+  @@map("course_enrollments")
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation("CourseEnrollments", fields: [courseId], references: [id],onDelete: Cascade)
+  studentId Int
+  student   User     @relation("StudentEnrollments", fields: [studentId], references: [id])
+  enrolledAt DateTime @default(now())
+  transactionId String?
+  transaction transaction? @relation("CourseTransaction", fields: [transactionId], references: [id])
+}
+
+model course_module {
+  id        String   @id @default(cuid())
+  title     String
+  summary   String?
+  courseId  String
+  course    Course   @relation("CourseModules", fields: [courseId], references: [id],onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  moduleContent course_module_content[] @relation("ModuleContent")
+}
+
+model course_module_content {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  mediaUrl    String
+  mediaType mediaType @default(video)
+  moduleId    String
+  module      course_module @relation("ModuleContent", fields: [moduleId], references: [id],onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model batch {
+  id            String        @id @default(cuid())
+  name          String
+  description   String
+  startDate     DateTime
+  duration      Int
+  capacity      Int
+  batchTimeSlot batchTimeSlot
+  isCompleted   Boolean      @default(false)
+  courseId      String
+  course        Course        @relation("Batches", fields: [courseId], references: [id],onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relationships
+  batchModules batch_module[] @relation("BatchModules")
+  batchEnrollments batchEnrollment[] @relation("BatchEnrollments")
+  chatMessages chat_message[] @relation("Batch")
+   instructors User[] @relation("BatchInstructors")
+  batchFinalAssessments final_assessment[] @relation("BatchFinalAssessment")
+  courseProgress course_progress[] @relation("CourseProgress")
+  certificates certificate[] @relation("certificates")
+}
+
+model batch_module {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  instructorId Int
+  instructor   User     @relation("BatchModuleInstructor", fields: [instructorId], references: [id])
+  batchId      String
+  batch        batch    @relation("BatchModules", fields: [batchId], references: [id],onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  batchModuleSessions batch_module_session[] @relation("BatchModuleSessions")
+  moduleAssessments module_assessment[] @relation("BatchModuleAssessment")
+  moduleProgress module_progress[] @relation("ModuleProgress")
+  
+}
+
+model batch_module_session {
+  id            String       @id @default(cuid())
+  topicName     String
+  summary       String
+  sessionDate   DateTime
+  meetLink      String @unique
+  recordingURL  String?
+  batchModuleId String
+  batchModule   batch_module @relation("BatchModuleSessions", fields: [batchModuleId], references: [id],onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relationships
+  chatMessages chat_message[] @relation("BatchSession")
+  sessionAttendance session_attendance[] @relation("SessionAttendance")
+}
+
+model batchEnrollment{
+  @@map("batch_enrollments")
+  id        String   @id @default(cuid())
+  batchId   String
+  batch     batch    @relation("BatchEnrollments", fields: [batchId], references: [id],onDelete: Cascade)
+  studentId Int
+  student   User     @relation("StudentBatchEnrollments", fields: [studentId], references: [id])
+  enrolledAt DateTime @default(now())
+}
+
+model chat_message{
+  id        String   @id @default(cuid())
+  senderId   Int
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  batchId   String
+  batch     batch    @relation("Batch", fields: [batchId], references: [id],onDelete: Cascade)
+  messageTxt String
+  replyToMessageId String?
+  replyToMessage chat_message? @relation("ReplyToMessage", fields: [replyToMessageId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  batchSessionId String?
+  batchSession batch_module_session? @relation("BatchSession", fields: [batchSessionId], references: [id],onDelete: Cascade)
+
+  // Relationships
+  replies chat_message[] @relation("ReplyToMessage")
+}
+
+model transaction{
+  id        String   @id @default(cuid())
+  orderId   String @unique
+  paymentId String?
+  paymentStatus paymentStatus @default(pending)
+  amount    Int
+  courseId  String
+  course    Course   @relation("CourseTransaction", fields: [courseId], references: [id],onDelete: Cascade)
+  userId    Int
+  user      User     @relation("UserTransaction", fields: [userId], references: [id])
+  couponId  String?
+  coupon    coupon?   @relation("CouponTransaction", fields: [couponId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  enrollments courseEnrollment[] @relation("CourseTransaction")
+ 
+  @@index([userId])
+  @@index([orderId])
+}
+
+model coupon{
+  id        String   @id @default(cuid())
+  code      String   @unique
+  expiryDate DateTime
+  limit    Int
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById Int
+  createdBy   User     @relation("CreatedCoupons", fields: [createdById], references: [id])
+
+  // Relationships
+  transactions transaction[] @relation("CouponTransaction")
+}
+
+
+model module_assessment {
+  id        String   @id @default(cuid())
+  title     String
+  totalMarks Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  batchModuleId String
+  batchModule   batch_module @relation("BatchModuleAssessment", fields: [batchModuleId], references: [id],onDelete: Cascade)
+
+  // Relationships
+  questions   questions[] @relation("QuestionsOnModuleAssessment")
+  submissions assessment_submission[] @relation("SubmissionsOnModuleAssessment")
+}
+
+model final_assessment {
+  id         String   @id @default(cuid())
+  title      String
+  totalMarks Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  batchId    String
+  batch      batch    @relation("BatchFinalAssessment", fields: [batchId], references: [id],onDelete: Cascade)
+  
+  // Relationships
+  questions   questions[] @relation("QuestionsOnFinalAssessment")
+  submissions assessment_submission[] @relation("SubmissionsOnFinalAssessment")
+}
+
+model questions {
+  id               String           @id @default(cuid())
+  assessmentType   assessmentType
+  questionText     String
+  marks            Int
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Polymorphic references
+  moduleAssessmentId String? 
+  finalAssessmentId  String?
+
+  moduleAssessment module_assessment? @relation("QuestionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id],onDelete: Cascade)
+  finalAssessment  final_assessment?  @relation("QuestionsOnFinalAssessment", fields: [finalAssessmentId], references: [id],onDelete: Cascade)
+
+  // Relationships
+  questionOptions options[]      @relation("QuestionOptions")
+  submittedAnswers user_answer[] @relation("Question")
+}
+
+model options{
+  id             String  @id @default(cuid())
+  optionText   String
+  isCorrect    Boolean
+  questionId   String
+  question    questions @relation("QuestionOptions", fields: [questionId], references: [id],onDelete: Cascade)
+
+  // Relationships
+  selectedBy user_answer[] @relation("SelectedOption")
+}
+
+model assessment_submission {
+  id               String   @id @default(cuid())
+  studentId        Int
+  student          User     @relation("StudentAssessmentSubmission", fields: [studentId], references: [id])
+  assessmentType   assessmentType
+  obtainedMarks    Decimal
+  submittedAt      DateTime @default(now())
+
+  // Polymorphic
+  moduleAssessmentId String?
+  finalAssessmentId  String?
+
+  moduleAssessment module_assessment? @relation("SubmissionsOnModuleAssessment", fields: [moduleAssessmentId], references: [id],onDelete: Cascade)
+  finalAssessment  final_assessment?  @relation("SubmissionsOnFinalAssessment", fields: [finalAssessmentId], references: [id],onDelete: Cascade)
+
+  // Relationships
+  answers user_answer[] @relation("SubmissionAnswers")
+}
+
+
+model user_answer {
+  id                 String   @id @default(cuid())
+  questionId         String
+  question           questions @relation("Question", fields: [questionId], references: [id],onDelete: Cascade)
+  selectedOptionId   String
+  selectedOption     options  @relation("SelectedOption", fields: [selectedOptionId], references: [id],onDelete: Cascade)
+  submissionId       String
+  submission         assessment_submission @relation("SubmissionAnswers", fields: [submissionId], references: [id],onDelete: Cascade)
+  answeredAt         DateTime @default(now())
+}
+
+
+model module_progress{
+  id        String   @id @default(cuid())
+  studentId Int
+  student   User     @relation("StudentModuleProgress", fields: [studentId], references: [id])
+  moduleId  String
+  module    batch_module @relation("ModuleProgress", fields: [moduleId], references: [id])
+  isCompleted Boolean @default(false)
+  completedAt DateTime?
+}
+
+
+model session_attendance{
+  id        String   @id @default(cuid())
+  studentId Int
+  student   User     @relation("StudentSessionAttendance", fields: [studentId], references: [id])
+  sessionId String
+  session   batch_module_session @relation("SessionAttendance", fields: [sessionId], references: [id],onDelete: Cascade)
+  attendanceType attendanceType @default(live)
+  isAttended Boolean @default(false)
+  attendedAt DateTime?
+}
+
+
+model course_progress{
+  id        String   @id @default(cuid())
+  batchId   String
+  batch     batch    @relation("CourseProgress", fields: [batchId], references: [id],onDelete: Cascade)
+  studentId Int
+  student   User     @relation("StudentCourseProgress", fields: [studentId], references: [id])
+  progrssPercent Float
+  isCompleted Boolean @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model certificate {
+  id        String   @id @default(cuid())
+  url       String?
+  certificateNumber String? @unique()
+  studentId Int
+  student   User     @relation("userCertificates", fields: [studentId], references: [id])
+
+  batchId String
+  batch   batch    @relation("certificates", fields: [batchId], references: [id],onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
