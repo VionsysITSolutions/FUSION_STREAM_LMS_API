@@ -1,0 +1,46 @@
+name: Deploy Node Application
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: self-hosted
+        steps:
+            - name: Checkout Source
+              uses: actions/checkout@v4
+
+            - name: Build Docker Image
+              run: docker build -t nodejs-app:latest .
+
+    deploy:
+        needs: build
+        runs-on: self-hosted
+        steps:
+            - name: Remove old container if exists
+              run: docker rm -f nodejs-app-container || true
+
+            - name: Run Docker Container with Env Variables
+              run: |
+                  docker run -d \
+                    -p 8080:8080 \
+                    --name nodejs-app-container \
+                    -e PORT=${{ secrets.PORT }} \
+                    -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+                    -e REDIS_URL=${{ secrets.REDIS_URL }} \
+                    -e SMTP_HOST=${{ secrets.SMTP_HOST }} \
+                    -e SMTP_PORT=${{ secrets.SMTP_PORT }} \
+                    -e SMTP_SERVICE=${{ secrets.SMTP_SERVICE }} \
+                    -e SMTP_MAIL=${{ secrets.SMTP_MAIL }} \
+                    -e SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
+                    -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+                    -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+                    -e RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+                    -e RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }} \
+                    -e RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }} \
+                    -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+                    -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+                    -e AWS_REGION=${{ secrets.AWS_REGION }} \
+                    nodejs-app:latest
