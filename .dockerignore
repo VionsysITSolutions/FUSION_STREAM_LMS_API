@@ -1,7 +1,6 @@
 .eslintrc
 eslint.config.mjs
-tsconfig.json
-*.md
-.git
-node_modules
-.env
+   node_modules
+   dist
+   .git
+   .env

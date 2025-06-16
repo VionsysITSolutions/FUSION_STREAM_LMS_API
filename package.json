@@ -4,14 +4,14 @@
     "description": "",
     "main": "server.js",
     "scripts": {
-        "dist": "npx tsc",
+        "dist": "tsc",
         "dev": " nodemon --legacy-watch src/server.ts",
         "start": "node dist/server.js",
         "lint": "eslint",
         "lint:fix": "eslint --fix",
         "format:check": "prettier . --check",
         "format:fix": "prettier . --fix",
-        "prepare": "husky",
+        "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') require('husky')\"",
         "preinstall": "npx prisma generate",
         "postinstall": "npx prisma generate"
     },
