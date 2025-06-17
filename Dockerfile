@@ -5,5 +5,6 @@ COPY prisma ./prisma/
 RUN npm install
 RUN npx prisma generate
 COPY . .
+RUN npm run dist
 EXPOSE 8080
-CMD ["node", "src/server.ts"]
+CMD ["npm", "start"]
