@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/package*.json ./
 COPY --from=base /app/prisma ./prisma/
-RUN npm ci --only=production
+RUN npm install --omit=dev
 RUN npx prisma generate
 RUN chmod +x ./dist/server.js
 EXPOSE 8080
