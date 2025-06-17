@@ -21,6 +21,7 @@ import progressRouter from './router/progress.route';
 import courseEnrollmentRouter from './router/courseEnrollment.route';
 import webhookRouter from './router/webhooks.route';
 import certificateRouter from './router/certificate.route';
+import config from './config';
 const app: Application = express();
 // middlewares
 app.use(express.json());
@@ -32,7 +33,7 @@ app.use(cookieParser());
 app.use(
     cors({
         methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'PUT'],
-        origin: 'http://localhost:3000',
+        origin: config.FRONTEND_URL,
         credentials: true
     })
 );
