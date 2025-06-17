@@ -50,6 +50,3 @@ jobs:
                     --name nodejs-app-container \
                     --env-file .env \
                     nodejs-app:latest
-
-            - name: Remove .env File
-              run: rm .env
