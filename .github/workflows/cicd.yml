@@ -22,25 +22,6 @@ jobs:
             - name: Stop and Remove Existing Container
               run: docker rm -f nodejs-app-container || true
 
-            - name: Create .env File
-              run: |
-                  echo "PORT=${{ secrets.PORT }}" >> .env
-                  echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-                  echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
-                  echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
-                  echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
-                  echo "SMTP_SERVICE=${{ secrets.SMTP_SERVICE }}" >> .env
-                  echo "SMTP_MAIL=${{ secrets.SMTP_MAIL }}" >> .env
-                  echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
-                  echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-                  echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env
-                  echo "RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}" >> .env
-                  echo "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}" >> .env
-                  echo "RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" >> .env
-                  echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> .env
-                  echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> .env
-                  echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
-
             - name: Run Docker Container
               run: |
                   docker run -d \
@@ -48,6 +29,3 @@ jobs:
                     --name nodejs-app-container \
                     --env-file .env \
                     nodejs-app:latest
-
-            - name: Clean Up .env File
-              run: rm -f .env
