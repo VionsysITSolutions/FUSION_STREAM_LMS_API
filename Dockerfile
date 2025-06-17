@@ -4,7 +4,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm install
 COPY . .
-RUN npm run dist
+RUN npm run build:prod
 
 FROM node:20-alpine AS production
 WORKDIR /app
@@ -13,5 +13,6 @@ COPY --from=base /app/package*.json ./
 COPY --from=base /app/prisma ./prisma/
 RUN npm ci --only=production
 RUN npx prisma generate
+RUN chmod +x ./dist/server.js
 EXPOSE 8080
-CMD ["npm", "start"]
+CMD ["node", "./dist/server.js"]
