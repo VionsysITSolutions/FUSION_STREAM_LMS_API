@@ -6,4 +6,4 @@ RUN npm install
 RUN npx prisma generate
 COPY . .
 EXPOSE 8080
-CMD ["npm", "run", "dev"]
+CMD ["node", "src/server.ts"]
