@@ -4,9 +4,7 @@
     "description": "",
     "main": "server.js",
     "scripts": {
-        "clean": "rimraf dist",
-        "build": "npm run clean && npm run lint && tsc",
-        "build:prod": "npm run build && chmod +x dist/server.js",
+        "dist": "npx tsc",
         "dev": "nodemon --legacy-watch src/server.ts",
         "start": "node dist/server.js",
         "lint": "eslint . --ext .ts",
