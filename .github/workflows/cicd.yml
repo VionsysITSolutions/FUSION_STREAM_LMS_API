@@ -16,15 +16,15 @@ jobs:
               run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
             - name: Build Docker image
-              run: docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs-app:${{ github.sha }} .
+              run: docker build -t vionsysitsolutions/fusion-stream-lms-backend:latest .
 
-            - name: Tag Docker image as latest
-              run: docker tag ${{ secrets.DOCKER_USERNAME }}/nodejs-app:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+            - name: Tag Docker image with commit SHA
+              run: docker tag vionsysitsolutions/fusion-stream-lms-backend:latest vionsysitsolutions/fusion-stream-lms-backend:${{ github.sha }}
 
             - name: Push Docker image to Docker Hub
               run: |
-                  docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-app:${{ github.sha }}
-                  docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+                  docker push vionsysitsolutions/fusion-stream-lms-backend:latest
+                  docker push vionsysitsolutions/fusion-stream-lms-backend:${{ github.sha }}
 
     deploy:
         needs: build-and-push
@@ -34,19 +34,19 @@ jobs:
               run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
             - name: Stop and remove existing container
-              run: docker rm -f nodejs-app-container || true
+              run: docker rm -f fusion-stream-lms-backend-container || true
 
             - name: Remove old image
-              run: docker rmi ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest || true
+              run: docker rmi vionsysitsolutions/fusion-stream-lms-backend:latest || true
 
             - name: Pull latest image from Docker Hub
-              run: docker pull ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+              run: docker pull vionsysitsolutions/fusion-stream-lms-backend:latest
 
             - name: Run Docker container
               run: |
                   docker run -d \
                     -p 8080:8080 \
-                    --name nodejs-app-container \
+                    --name fusion-stream-lms-backend-container \
                     -e PORT=${{ secrets.PORT }} \
                     -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
                     -e REDIS_URL=${{ secrets.REDIS_URL }} \
@@ -63,4 +63,4 @@ jobs:
                     -e AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
                     -e AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
                     -e AWS_REGION=${{ secrets.AWS_REGION }} \
-                    ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+                    vionsysitsolutions/fusion-stream-lms-backend:latest
