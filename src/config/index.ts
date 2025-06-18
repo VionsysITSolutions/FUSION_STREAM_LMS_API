@@ -14,7 +14,6 @@ export default {
     FRONTEND_URL: process.env.FRONTEND_URL,
     STREAM_API_KEY: process.env.STREAM_API_KEY,
     AWS_REGION: process.env.AWS_REGION,
-    AWS_ACESSS_KEY: process.env.AWS_ACESSS_KEY,
+    AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
     AWS_SECRET_KEY: process.env.AWS_SECRET_KEY
-
 };
