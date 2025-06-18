@@ -7,7 +7,7 @@ RUN npx prisma generate
 COPY . .
 RUN npm run dist
 
-FROM node:20-alpine AS production
+FROM node:20 AS production
 WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
