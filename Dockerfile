@@ -18,4 +18,4 @@ RUN chmod +x ./start.sh
 ENV NODE_ENV=production
 EXPOSE 8080
 CMD ["./start.sh"]
-CMD ["node", "dist/server.js"]
+
