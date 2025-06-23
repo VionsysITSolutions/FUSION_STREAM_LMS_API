@@ -23,7 +23,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 }
@@ -37,7 +36,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 },
@@ -90,7 +88,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 }
@@ -109,7 +106,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 }

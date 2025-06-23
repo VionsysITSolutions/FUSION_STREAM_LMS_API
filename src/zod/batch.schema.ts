@@ -46,7 +46,12 @@ export const createBatchSchema = z.object({
             required_error: 'Course ID is required',
             invalid_type_error: 'Course ID must be a string'
         })
-        .min(1, { message: 'Course ID is required' })
+        .min(1, { message: 'Course ID is required' }),
+
+    instructors: z.array(z.number({
+        required_error: 'Instructor ID is required',
+        invalid_type_error: 'Instructor ID must be a number'
+    })).min(1, { message: 'At least one instructor is required' })
 });
 
 export const updateBatchSchema = createBatchSchema.partial();

@@ -11,7 +11,6 @@ export default {
     getAllBatchModules: async () => {
         return prisma.batch_module.findMany({
             include: {
-                instructor: true,
                 batch: true,
                 batchModuleSessions: true
             }
@@ -22,7 +21,6 @@ export default {
         return prisma.batch_module.findUnique({
             where: { id },
             include: {
-                instructor: true,
                 batch: true,
                 batchModuleSessions: true
             }
@@ -46,7 +44,6 @@ export default {
         return prisma.batch_module.findMany({
             where: { batchId },
             include: {
-                instructor: true,
                 batchModuleSessions: true
             }
         });
