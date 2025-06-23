@@ -10,9 +10,15 @@ import { EnrollStudentBody } from '../types/types';
 
 export default {
     createBatch: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        console.log(req.body)
         const result = createBatchSchema.safeParse(req.body);
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const { instructors } = result.data;
+
+        if (!instructors || instructors?.length === 0) {
+            return httpError(next, new Error('At least one instructor must be assigned to the batch.'), req, 400);
         }
 
         const batch = await batchService.createBatch({
@@ -35,6 +41,18 @@ export default {
         }
 
         const batch = await batchService.getBatchById(result.data.id);
+        if (!batch) {
+            return httpError(next, new Error('Batch not found'), req, 404);
+        }
+
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { batch });
+    }),
+
+    getBatchByInstructorId: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user?.id as number;
+
+        const batch = await batchService.getBatchByInstructor(userId);
+
         if (!batch) {
             return httpError(next, new Error('Batch not found'), req, 404);
         }

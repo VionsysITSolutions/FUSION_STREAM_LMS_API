@@ -36,5 +36,10 @@ export default {
 
         const updatedUser = await userService.updateUser({ id: idResult.data.id, data: result.data });
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { updatedUser });
+    }),
+
+    getAllInstructors: catchAsync(async (req: Request, res: Response) => {
+        const instructors = await userService.getInstuctors()
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, instructors);
     })
 };
