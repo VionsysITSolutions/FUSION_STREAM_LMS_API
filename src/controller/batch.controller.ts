@@ -51,13 +51,13 @@ export default {
     getBatchByInstructorId: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const userId = req.user?.id as number;
 
-        const batch = await batchService.getBatchByInstructor(userId);
+        const batches = await batchService.getBatchByInstructor(userId);
 
-        if (!batch) {
+        if (!batches) {
             return httpError(next, new Error('Batch not found'), req, 404);
         }
 
-        return httpResponse(req, res, 200, responseMessage.SUCCESS, { batch });
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { batches });
     }),
 
     updateBatch: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -136,28 +136,40 @@ export default {
         await batchService.unenrollStudentFromBatch(batchId, Number(studentId));
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { message: 'Student unenrolled successfully' });
     }),
-    
-    notifyStudentOnMessage: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
+    notifyStudentOnMessage: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const result = createNotifyOnMessageSchema.safeParse(req.body);
+
         if (!result.success) {
             return httpError(next, new Error(quicker.zodError(result)), req, 400);
         }
 
         const { batchId } = result.data;
-        const enrolledStudents = await batchService.getAllEnrolledStudentByBatchId(batchId);
 
-        if (enrolledStudents && enrolledStudents.batchEnrollments.length > 0) {
-            await batchService.sendNotificationToStudentsSMS(result.data);
-            return httpResponse(req, res, 200, responseMessage.SUCCESS, {
-                message: 'Notification sent successfully',
-            });
-        } else {
-            return httpResponse(req, res, 200, responseMessage.SUCCESS, {
-                message: 'No student have enrolled the course in this branch',
-            });
+        const batchDetails = await batchService.getBatchById(batchId);
+        if (!batchDetails) {
+            return httpError(next, new Error('Batch not found'), req, 404);
         }
-    }),
 
+        const enrolledStudents = await batchService.getStudentsInBatch(batchId);
+        if (!enrolledStudents || enrolledStudents.length === 0) {
+            return httpError(next, new Error('No students enrolled in this batch'), req, 404);
+        }
+
+        const smsResults = await Promise.all(
+            enrolledStudents.map(async (student) => {
+                const phone = student.student.mobileNumber.startsWith('+91')
+                    ? student.student.mobileNumber
+                    : `+91${student.student.mobileNumber}`;
+
+                return batchService.sendNotificationToStudentsSMS(result.data, phone);
+            })
+        );
+
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+            smsResults,
+            message: 'Notification sent successfully to all students.',
+        });
+    }),
 
 };
