@@ -18,5 +18,6 @@ batchRouter.route('/course/:courseId').get(batchController.getBatchesByCourse);
 batchRouter.route('/enroll').post(authenticateUser('student', 'instructor'), batchController.enrollStudent);
 batchRouter.route('/unenroll').post(authenticateUser('instructor'), batchController.unenrollStudent);
 batchRouter.route('/:batchId/students').get(batchController.getEnrolledStudents);
+batchRouter.route('/notify-students').post(batchController.notifyStudentOnMessage);
 
 export default batchRouter;

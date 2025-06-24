@@ -5,7 +5,7 @@ import httpError from '../util/httpError';
 import quicker from '../util/quicker';
 import responseMessage from '../constants/responseMessage';
 import batchService from '../service/batch.service';
-import { createBatchSchema, updateBatchSchema, getBatchByIdSchema } from '../zod/batch.schema';
+import { createBatchSchema, updateBatchSchema, getBatchByIdSchema, createNotifyOnMessageSchema } from '../zod/batch.schema';
 import { EnrollStudentBody } from '../types/types';
 
 export default {
@@ -135,5 +135,29 @@ export default {
 
         await batchService.unenrollStudentFromBatch(batchId, Number(studentId));
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { message: 'Student unenrolled successfully' });
-    })
+    }),
+    
+    notifyStudentOnMessage: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+        const result = createNotifyOnMessageSchema.safeParse(req.body);
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+
+        const { batchId } = result.data;
+        const enrolledStudents = await batchService.getAllEnrolledStudentByBatchId(batchId);
+
+        if (enrolledStudents && enrolledStudents.batchEnrollments.length > 0) {
+            await batchService.sendNotificationToStudentsSMS(result.data);
+            return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                message: 'Notification sent successfully',
+            });
+        } else {
+            return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                message: 'No student have enrolled the course in this branch',
+            });
+        }
+    }),
+
+
 };

@@ -1,5 +1,7 @@
+import { PublishCommand } from '@aws-sdk/client-sns';
 import prisma from '../lib/db';
 import { updateBatchBody } from '../types/types';
+import { sns } from '../lib/aws';
 
 export default {
     // Batch Services
@@ -102,10 +104,9 @@ export default {
             where: { id },
             data: {
                 ...data,
-                instructors: {
+                 instructors: {
                     connect: data.instructors?.map((id: number) => ({ id }))
                 }
-
             }
         });
     },
@@ -166,5 +167,44 @@ export default {
                 studentId
             }
         });
+    },
+    sendNotificationToStudentsSMS: async (batchData: {
+        heading: string;
+        description: string;
+        batchId: string;
+    }) => {
+
+        const params = {
+            Message: `Hi User
+            ${batchData?.heading}
+            ${batchData?.description}
+            `,
+            PhoneNumber: '+91 7498012116',
+            MessageAttributes: {
+                'AWS.SNS.SMS.SenderID': {
+                    DataType: 'String',
+                    StringValue: 'Fusion_',
+                },
+            },
+        };
+        const command = new PublishCommand(params);
+        const result = await sns.send(command);
+
+        // console.log(command);
+        // console.log('------');
+        // console.log(result);
+        return result
+    },
+    getAllEnrolledStudentByBatchId:async (id:string)=>{
+        const batchDetails = await prisma.batch.findUnique({
+            where: { id },
+            include: {
+                batchEnrollments: {
+                    include: { student: true }
+                },
+            }
+        });
+        return batchDetails;
     }
+    
 };

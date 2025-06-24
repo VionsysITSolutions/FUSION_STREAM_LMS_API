@@ -161,3 +161,26 @@ export const getBatchSessionByIdSchema = z.object({
         })
         .min(1, { message: 'Batch session ID is required' })
 });
+
+export const createNotifyOnMessageSchema = z.object({
+    heading: z
+        .string({
+            required_error: 'Heading is required',
+        })
+        .min(1, { message: 'Heading must be at least 3 characters long' })
+        .max(100, { message: 'Heading cannot exceed 100 characters' }),
+
+    description: z
+        .string({
+            required_error: 'Heading is required',
+        })
+        .min(1, { message: 'Description must be at least 10 characters long' })
+    ,
+    batchId: z
+        .string({
+            required_error: 'Batch ID is required',
+            invalid_type_error: 'Batch ID must be a string'
+        })
+        .min(1, { message: 'Batch ID is required' })
+
+})
