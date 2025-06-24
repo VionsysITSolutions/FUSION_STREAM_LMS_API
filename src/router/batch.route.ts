@@ -6,8 +6,8 @@ const batchRouter = Router();
 
 // Batch Routes
 batchRouter.route('/').post(authenticateUser('instructor', 'admin'), batchController.createBatch).get(batchController.getAllBatches);
-batchRouter.route('/instructor/:id').post(authenticateUser('instructor', 'admin'), batchController.getBatchByInstructorId)
-batchRouter
+batchRouter.route('/instructor').get(authenticateUser('instructor', 'admin'), batchController.getBatchByInstructorId)
+ batchRouter
     .route('/:id')
     .get(batchController.getBatchById)
     .put(authenticateUser('instructor', 'admin'), batchController.updateBatch)

@@ -168,18 +168,17 @@ export default {
             }
         });
     },
-    sendNotificationToStudentsSMS: async (batchData: {
+     sendNotificationToStudentsSMS: async (batchData: {
         heading: string;
         description: string;
         batchId: string;
-    }) => {
+    },
+        phoneNumber: string
+    ) => {
 
         const params = {
-            Message: `Hi User
-            ${batchData?.heading}
-            ${batchData?.description}
-            `,
-            PhoneNumber: '+91 7498012116',
+            Message: `Hi User\n${batchData.heading}\n${batchData.description}`,
+            PhoneNumber: phoneNumber,
             MessageAttributes: {
                 'AWS.SNS.SMS.SenderID': {
                     DataType: 'String',
@@ -195,16 +194,5 @@ export default {
         // console.log(result);
         return result
     },
-    getAllEnrolledStudentByBatchId:async (id:string)=>{
-        const batchDetails = await prisma.batch.findUnique({
-            where: { id },
-            include: {
-                batchEnrollments: {
-                    include: { student: true }
-                },
-            }
-        });
-        return batchDetails;
-    }
     
 };
