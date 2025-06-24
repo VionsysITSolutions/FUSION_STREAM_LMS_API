@@ -40,6 +40,7 @@ export default {
 
     getAllInstructors: catchAsync(async (req: Request, res: Response) => {
         const instructors = await userService.getInstuctors()
+        console.log(instructors)
         return httpResponse(req, res, 200, responseMessage.SUCCESS, instructors);
     })
 };
