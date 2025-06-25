@@ -86,6 +86,8 @@ model User {
   studentCourseProgress course_progress[] @relation("StudentCourseProgress")
    instructorBatches batch[] @relation("BatchInstructors")
   userCertificates certificate[] @relation("userCertificates")
+   studentAttendances   manual_student_attendance[] @relation("manual_student_attendance")
+  instructorAttendances manual_student_attendance[] @relation("InstructorRelation")
 }
 
 model Course {
@@ -170,6 +172,7 @@ model batch {
   batchFinalAssessments final_assessment[] @relation("BatchFinalAssessment")
   courseProgress course_progress[] @relation("CourseProgress")
   certificates certificate[] @relation("certificates")
+  batchAttendances manual_student_attendance[] @relation("BatchAttendence")
 }
 
 model batch_module {
@@ -204,6 +207,8 @@ model batch_module_session {
   // Relationships
   chatMessages chat_message[] @relation("BatchSession")
   sessionAttendance session_attendance[] @relation("SessionAttendance")
+  sessionOfflineAttendance manual_student_attendance[]  @relation("SessionOfflineAttendance")
+
 }
 
 model batchEnrollment{
@@ -407,4 +412,19 @@ model certificate {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model manual_student_attendance {
+    id           Int    @id @default(autoincrement())
+    studentId    Int
+    student      User     @relation("manual_student_attendance", fields: [studentId], references: [id])
+    instructorId Int
+    instructor   User     @relation("InstructorRelation", fields: [instructorId], references: [id])
+    batchId      String
+    batch        batch  @relation("BatchAttendence", fields: [batchId], references: [id])
+    sessionId    String
+    session      batch_module_session @relation("SessionOfflineAttendance", fields: [sessionId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
