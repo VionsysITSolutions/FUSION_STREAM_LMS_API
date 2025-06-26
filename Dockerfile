@@ -24,6 +24,9 @@ COPY --from=builder /app/start.sh ./start.sh
 
 # Make sure start.sh is executable
 RUN chmod +x ./start.sh
+# Security best practice: Use a non-root user (optional)
+# RUN adduser --disabled-password appuser
+# USER appuser
 
 ENV NODE_ENV=production
 EXPOSE 8080
