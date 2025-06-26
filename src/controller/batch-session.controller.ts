@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import httpResponse from '../util/httpResponse';
 import catchAsync from '../util/catchAsync';
-import { createBatchSessionSchema, updateBatchSessionSchema, getBatchSessionByIdSchema } from '../zod/batch.schema';
+import { createBatchSessionSchema, updateBatchSessionSchema, getBatchSessionByIdSchema, createOfflineAttendanceSchema } from '../zod/batch.schema';
 import httpError from '../util/httpError';
 import quicker from '../util/quicker';
 import responseMessage from '../constants/responseMessage';
@@ -94,5 +94,32 @@ export default {
     getUpcomingSessions: catchAsync(async (req: Request, res: Response) => {
         const sessions = await batchSessionService.getUpcomingSessions();
         return httpResponse(req, res, 200, responseMessage.SUCCESS, { sessions });
-    })
+    }),
+
+    createOfflineAttendanceBatch: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        console.log(req.body)
+        console.log(req.user)
+        const result = createOfflineAttendanceSchema.safeParse(req.body);
+        if (!result.success) {
+            return httpError(next, new Error(quicker.zodError(result)), req, 400);
+        }
+        const instructorId = req.user?.id as number;
+        const attendanceWithInstructor = result.data.map((entry) => ({
+        ...entry,
+        instructorId,
+        }));
+        const batch = await batchSessionService.createOfflineAttendanceBatch(attendanceWithInstructor);
+
+        // const batch = await batchSessionService.createOfflineAttendanceBatch(
+        //    { ...result.data  ,
+        //     instructorId : req.user?.id as number }         
+        // );
+        return httpResponse(req, res, 201, responseMessage.SUCCESS, { batch });
+    }),
+
+     getAllOfflineAttendance: catchAsync(async (req: Request, res: Response) => {
+         const batchId = req.params.batchId;
+          const allAttendance = await batchSessionService.getOfflineAttendanceByBatchId(batchId);
+        return httpResponse(req, res, 200, responseMessage.SUCCESS, { allAttendance });
+    }),
 };

@@ -18,4 +18,6 @@ batchSessionRouter
     .put(authenticateUser('instructor', 'admin'), batchSessionController.updateBatchSession)
     .delete(authenticateUser('instructor', 'admin'), batchSessionController.deleteBatchSession);
 
-export default batchSessionRouter;
+batchSessionRouter.route('/offline-attendance').post(authenticateUser('instructor'),batchSessionController.createOfflineAttendanceBatch)
+batchSessionRouter.route('/get-offline-attendance/:batchId').get(batchSessionController.getAllOfflineAttendance);
+export default batchSessionRouter;  

@@ -184,3 +184,37 @@ export const createNotifyOnMessageSchema = z.object({
         .min(1, { message: 'Batch ID is required' })
 
 })
+
+export const createOfflineAttendanceSchema =
+    z.array(
+        z.object({
+            studentId: z
+                .number({
+                    required_error: 'Student ID is required',
+                    invalid_type_error: 'Student ID must be a number'
+                })
+                .min(1, { message: 'Student ID is required' }),
+
+            // instructorId: z
+            //     .number({
+            //         required_error: 'Instructor ID is required',
+            //         invalid_type_error: 'Instructor ID must be a number'
+            //     })
+            //     .min(1, { message: 'Instructor ID is required' }),
+
+            batchId: z
+                .string({
+                    required_error: 'Batch ID is required',
+                    invalid_type_error: 'Batch ID must be a string'
+                })
+                .min(1, { message: 'Batch ID is required' }),
+
+            sessionId: z
+                .string({
+                    required_error: 'Session ID is required',
+                    invalid_type_error: 'Session ID must be a string'
+                })
+                .min(1, { message: 'Session ID is required' })
+
+        })
+    )
