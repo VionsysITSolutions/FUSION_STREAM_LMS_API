@@ -39,6 +39,7 @@ export type updateBatchBody = {
     duration: number;
     batchTimeSlot: 'morning' | 'afternoon' | 'evening';
     courseId: string;
+    instructors: number[];
 };
 
 export type UpdateBatchModuleBody = {

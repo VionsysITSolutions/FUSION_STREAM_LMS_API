@@ -32,5 +32,20 @@ export default {
             where: { id },
             data
         });
+    },
+
+    getInstuctors: async () => {
+        return await prisma.user.findMany({
+            where: {
+                role: 'instructor'
+            },
+            select: {
+                firstName: true,
+                lastName: true,
+                id: true,
+                email: true
+            }
+        })
+
     }
 };

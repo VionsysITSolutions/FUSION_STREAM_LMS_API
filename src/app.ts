@@ -22,6 +22,7 @@ import courseEnrollmentRouter from './router/courseEnrollment.route';
 import webhookRouter from './router/webhooks.route';
 import certificateRouter from './router/certificate.route';
 import config from './config';
+import batchMaterialRouter from './router/batch-material.route';
 const app: Application = express();
 // middlewares
 app.use(express.json());
@@ -53,6 +54,7 @@ app.use('/api/v1/submission', submissionRouter);
 app.use('/api/v1/progress', progressRouter);
 app.use('/api/v1/enrollment', courseEnrollmentRouter);
 app.use('/api/v1/certificate', certificateRouter);
+app.use('/api/v1/batch-material', batchMaterialRouter);
 app.use('/api/v1/webhook', express.raw({ type: 'application/json' }), webhookRouter);
 
 // 404 Handler

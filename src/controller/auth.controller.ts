@@ -75,7 +75,11 @@ export default {
 
         const user = await userServices.findbyEmail(result.data.email);
         if (!user || user.isDeleted) {
-            return httpError(next, new Error('User not found'), req, 404);
+            return httpError(next, new Error('User not found or deleted'), req, 404);
+        }
+
+        if (user.status === 'blocked') {
+            return httpError(next, new Error('You are blocked, please connect with Admin'), req, 404);
         }
 
         const otp = await authServices.createOtp(result.data.email);

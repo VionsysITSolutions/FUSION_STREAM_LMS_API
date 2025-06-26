@@ -23,7 +23,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 }
@@ -37,7 +36,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 },
@@ -90,7 +88,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 }
@@ -109,7 +106,6 @@ export default {
             include: {
                 batchModule: {
                     include: {
-                        instructor: true,
                         batch: true
                     }
                 }
@@ -124,5 +120,22 @@ export default {
         return prisma.batch_module_session.findFirst({
             where: { meetLink: callId }
         });
-    }
+    },
+    createOfflineAttendanceBatch: async (batchData: {
+        studentId: number;
+        instructorId: number;
+        batchId: string;
+        sessionId: string;
+    }[]) => {
+        return prisma.manual_student_attendance.createMany({
+            data: batchData,
+        });
+    },
+
+     getOfflineAttendanceByBatchId: async (batchId: string) => {
+        return prisma.manual_student_attendance.findMany({
+            where: { batchId },
+            
+        });
+    },
 };

@@ -5,7 +5,7 @@ import authenticateUser from '../middleware/authenticate';
 const courseRouter = Router();
 
 // Course Routes
-courseRouter.route('/').post(authenticateUser('instructor'), courseController.createCourse).get(courseController.getAllCourses);
+courseRouter.route('/').post(authenticateUser('admin'), courseController.createCourse).get(courseController.getAllCourses);
 courseRouter.route('/approved').get(courseController.getApprovedCourses);
 courseRouter
     .route('/:id')

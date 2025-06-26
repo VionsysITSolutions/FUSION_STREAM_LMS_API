@@ -1,5 +1,7 @@
+import { PublishCommand } from '@aws-sdk/client-sns';
 import prisma from '../lib/db';
 import { updateBatchBody } from '../types/types';
+import { sns } from '../lib/aws';
 
 export default {
     // Batch Services
@@ -11,11 +13,15 @@ export default {
         duration: number;
         batchTimeSlot: 'morning' | 'afternoon' | 'evening';
         courseId: string;
+        instructors: number[]
     }) => {
         return prisma.batch.create({
             data: {
                 ...batchData,
-                startDate: new Date(batchData.startDate)
+                startDate: new Date(batchData.startDate),
+                instructors: {
+                    connect: batchData.instructors?.map((id: number) => ({ id }))
+                }
             }
         });
     },
@@ -37,8 +43,8 @@ export default {
                     include: {
                         student: true
                     }
-                }
-
+                },
+                instructors: true
             }
         });
     },
@@ -60,7 +66,31 @@ export default {
                     include: { student: true }
                 },
                 instructors: true
+            }
+        });
+    },
 
+    getBatchByInstructor: async (id: number) => {
+        return prisma.batch.findMany({
+            where: {
+                instructors: {
+                    some: { id }
+                }
+            },
+            include: {
+                batchModules: {
+                    include: {
+                        batchModuleSessions: {
+                            include: {
+                                sessionAttendance: true
+                            }
+                        }
+                    }
+                },
+                batchEnrollments: {
+                    include: { student: true }
+                },
+                instructors: true
             }
         });
     },
@@ -72,7 +102,12 @@ export default {
 
         return prisma.batch.update({
             where: { id },
-            data
+            data: {
+                ...data,
+                 instructors: {
+                    connect: data.instructors?.map((id: number) => ({ id }))
+                }
+            }
         });
     },
 
@@ -86,8 +121,22 @@ export default {
         return prisma.batch.findMany({
             where: { courseId },
             include: {
-                batchModules: true,
-                batchEnrollments: true
+                course: {
+                    include: {
+                        createdBy: true
+                    }
+                },
+                batchModules: {
+                    include: {
+                        batchModuleSessions: true
+                    }
+                },
+                batchEnrollments: {
+                    include: {
+                        student: true
+                    }
+                },
+                instructors: true
             }
         });
     },
@@ -118,5 +167,32 @@ export default {
                 studentId
             }
         });
-    }
+    },
+     sendNotificationToStudentsSMS: async (batchData: {
+        heading: string;
+        description: string;
+        batchId: string;
+    },
+        phoneNumber: string
+    ) => {
+
+        const params = {
+            Message: `Hi User\n${batchData.heading}\n${batchData.description}`,
+            PhoneNumber: phoneNumber,
+            MessageAttributes: {
+                'AWS.SNS.SMS.SenderID': {
+                    DataType: 'String',
+                    StringValue: 'Fusion_',
+                },
+            },
+        };
+        const command = new PublishCommand(params);
+        const result = await sns.send(command);
+
+        // console.log(command);
+        // console.log('------');
+        // console.log(result);
+        return result
+    },
+    
 };
