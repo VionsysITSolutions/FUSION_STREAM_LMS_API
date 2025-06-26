@@ -8,6 +8,7 @@ export default (fn: AsyncFunction) => {
         try {
             await fn(req, res, next);
         } catch (error) {
+            console.log(error)
             return httpError(next, error || new Error('Internal server error'), req, 500);
         }
     };
