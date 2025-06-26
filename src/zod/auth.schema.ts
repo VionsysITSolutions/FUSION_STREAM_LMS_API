@@ -54,6 +54,11 @@ export const signUpSchema = z.object({
     }),
 
     address: z.string().optional(),
+    status: z
+        .enum(['active', 'blocked'], {
+            invalid_type_error: 'Invalid role'
+        })
+        .optional(),
 
     role: z
         .enum(['student', 'instructor', 'admin'], {
